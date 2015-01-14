@@ -1,22 +1,28 @@
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 from distributed.storage.src.base.controllersouth import ControllerSouthBase
 from distributed.storage.src.util.threadmanager import ThreadManager
+from distributed.storage.src.util.packetmanager import PacketManager
 
 class ClientSouthServer(ControllerSouthBase):
+
+    def __init__(self, driver):
+        self.__driver = driver
+
     def ping(self):
-        return "PONG"
+        return self.__driver.ping()
 
     def syn_request(self):
-        return True
+        return self.__driver.send_sync()
 
 class ClientSouthServerHandler:
 
-    def __init__(self):
+    def __init__(self, driver):
         self.__server = None
+        self.__driver = driver
 
     def set_up_server(self, ip, port):
         self.__server = SimpleXMLRPCServer((ip, port))
-        self.__server.register_instance(ClientSouthServer())
+        self.__server.register_instance(ClientSouthServer(self.__driver))
         return True
 
     def start_server(self):
@@ -25,8 +31,8 @@ class ClientSouthServerHandler:
 
 class ClientSouthAPI(ControllerSouthBase):
 
-    def __init__(self):
-        self.__handler = ClientSouthServerHandler()
+    def __init__(self, driver):
+        self.__handler = ClientSouthServerHandler(driver)
 
     def start_api(self, ip, port):
         self.__handler.set_up_server(ip, port)
