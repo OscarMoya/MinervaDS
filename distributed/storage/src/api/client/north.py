@@ -12,21 +12,21 @@ class ClientNorthAPI(EndPointNorthBase):
 
     def leave(self, client_id):
         result = self.__controller_north_channel.leave(client_id)
-        return
+        return self.__process_result(result)
 
     def read_request(self, client_id, file_id):
         result = self.__controller_north_channel.read_request(client_id, file_id)
-        return
+        return self.__process_result(result)
 
     def write_request(self, file_size, user_requirements):
         result = self.__controller_north_channel.write_request(file_size, user_requirements)
-        return
+        return self.__process_result(result)
 
-    def __initialize(self, ip, port):
+    def initialize(self, ip, port):
         self.__controller_north_channel = xmlrpclib.ServerProxy(ip, port)
 
     def __process_result(self, result):
-        #TODO Do something. like raise exceptions if needed
+        #TODO: Do something. like raise exceptions if needed
         return result
 
     def get_controller_north_channel(self):
@@ -34,4 +34,3 @@ class ClientNorthAPI(EndPointNorthBase):
 
     def set_controller_north_ip(self, ip):
         self.__controller_north_ip = ip
-
