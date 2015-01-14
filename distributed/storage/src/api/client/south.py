@@ -1,7 +1,6 @@
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 from distributed.storage.src.base.controllersouth import ControllerSouthBase
 from distributed.storage.src.util.threadmanager import ThreadManager
-from distributed.storage.src.util.packetmanager import PacketManager
 
 class ClientSouthServer(ControllerSouthBase):
 

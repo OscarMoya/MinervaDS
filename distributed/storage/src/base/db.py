@@ -6,9 +6,13 @@ class DBBase:
     __metaclass__ == ABCMeta
 
     @abstractmethod
-    def save(self):
+    def save(self, **kwargs):
         return
 
     @abstractmethod
-    def load(self):
-        return 
+    def load(self, **kwargs):
+        return
+
+    @abstractmethod
+    def filter(self, **kwargs):
+        return

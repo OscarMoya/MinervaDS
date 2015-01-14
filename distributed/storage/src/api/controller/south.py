@@ -19,8 +19,6 @@ class ControllerSouthServer(EndPointNorthBase):
     def write_request(self, file_size, user_requirements):
         return self.__driver.write_request(file_size, user_requirements)
 
-    def initialize(self, ip, port):
-        self.__controller_north_channel = xmlrpclib.ServerProxy(ip, port)
 
 class ControllerSouthServerHandler:
 
@@ -40,7 +38,7 @@ class ControllerSouthServerHandler:
 class ControllerSouthAPI():
 
     def __init__(self, driver):
-        self.__handler = ClientSouthServerHandler(driver)
+        self.__handler = ControllerSouthServerHandler(driver)
 
     def start_api(self, ip, port):
         self.__handler.set_up_server(ip, port)

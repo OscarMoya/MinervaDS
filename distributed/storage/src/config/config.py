@@ -1,3 +1,4 @@
 class DSConfig:
 
     MAGIC_IP = "192.168.254.1"
+    DEFAULT_MGMT_PORT = 9696
