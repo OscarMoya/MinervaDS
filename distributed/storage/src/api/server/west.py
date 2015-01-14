@@ -1,11 +1,19 @@
-from distributed.storage.src.base.endpointnorth import EndPointNorthBase
+from distributed.storage.src.base.endpointeast import EndPointEastBase
 import xmlrpclib
 
-class ClientNorthAPI(EndPointNorthBase):
+class ServerWestAPI(EndPointEastBase):
 
     def __init__(self):
-        self.__controller_north_channel = None
+        self.__server_west_channel = None
 
+    def syn(self):
+        """
+        result =
+        return self.__process_result(result)
+        """
+        return
+
+    """
     def join(self, client_id, mgmt_ip, data_ip):
         result = self.__controller_north_channel.join(client_id, mgmt_ip, data_ip)
         return self.__process_result(result)
@@ -13,13 +21,14 @@ class ClientNorthAPI(EndPointNorthBase):
     def leave(self, client_id):
         result = self.__controller_north_channel.leave(client_id)
         return
+    """
 
-    def read_request(self, client_id, file_id):
-        result = self.__controller_north_channel.read_request(client_id, file_id)
+    def read(self, file_id):
+        #result = self.__controller_north_channel.read_request(client_id, file_id)
         return
 
-    def write_request(self, file_size, user_requirements):
-        result = self.__controller_north_channel.write_request(file_size, user_requirements)
+    def write(self, file_size, user_requirements):
+        #result = self.__controller_north_channel.write_request(file_size, user_requirements)
         return
 
     def __initialize(self, ip, port):
@@ -29,9 +38,9 @@ class ClientNorthAPI(EndPointNorthBase):
         #TODO Do something. like raise exceptions if needed
         return result
 
-    def get_controller_north_channel(self):
-        return self.__controller_north_channel
+    def get_server_west_channel(self):
+        return self.__server_west_channel
 
-    def set_controller_north_ip(self, ip):
-        self.__controller_north_ip = ip
+    def set_server_west_ip(self, ip):
+        self.__server_west_ip = ip
 
