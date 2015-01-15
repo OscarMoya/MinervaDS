@@ -4,9 +4,10 @@ import uuid
 
 class ControllerSouthDriver(EndPointNorthBase):
 
-    def __init__(self, db=None):
+    def __init__(self, pipe=None , db=None):
         self.__endpoint_db = None
         self.__file_db = None
+        self.__pipe = pipe
 
         self.SERVER_TYPE = "server"
         self.CLIENT_TYPE = "client"
@@ -17,11 +18,13 @@ class ControllerSouthDriver(EndPointNorthBase):
 
     def join(self, id, type, mgmt_ip, data_ip):
         url = "http://%s:%d" % (mgmt_ip, DSConfig.DEFAULT_MGMT_PORT)
-        result = self.__db.save(id=id, type=type, url=mgmt_ip, data_ip=data_ip)
+        result = self.__endpoint_db.save(id=id, type=type, url=mgmt_ip, data_ip=data_ip)
+        self.__alert_pipe(self.join, id=id, type=type, url= url, data_ip=data_ip)
         return result
 
     def leave(self, id):
-        result = self.__db.delete(id)
+        result = self.__endpoint_db.remove(id)
+        self.__alert_pipe(self.leave, id=id)
         return result
 
     def read_request(self, client_id, file_id,):
@@ -33,6 +36,7 @@ class ControllerSouthDriver(EndPointNorthBase):
                   "B": server_b.get("server_url"),
                   "AxB":server_c.get("server_url")}
 
+        self.__alert_pipe(self.read_request, client_id, file_id)
         return result
 
     def write_request(self,client_id, file_size, user_requirements):
@@ -54,8 +58,26 @@ class ControllerSouthDriver(EndPointNorthBase):
                   "server_b": server_b.get("url"),
                   "server_c": server_c.get("url"),}
 
+        self.__alert_pipe(self.write_request, client_id, file_id)
         return result
 
     def start(self):
         self.__endpoint_db.load()
         self.__file_db.load()
+
+    def get_file_db(self):
+        return self.__file_db
+
+    def get_endpoint_db(self):
+        return self.end_point_db
+
+    def set_file_db(self, db):
+        self.__file_db = db
+
+    def set_endpoint_db(self, db):
+        self.__endpoint_db = db
+
+    def __alert_pipe(self, func, **kwargs):
+        if self.__pipe:
+            return self.__pipe.alert(func, kwargs)
+

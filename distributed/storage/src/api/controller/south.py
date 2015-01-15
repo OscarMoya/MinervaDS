@@ -35,7 +35,7 @@ class ControllerSouthServerHandler:
         self.__server.serve_forever()
         return True
 
-class ControllerSouthAPI():
+class ControllerSouthAPI:
 
     def __init__(self, driver):
         self.__handler = ControllerSouthServerHandler(driver)

@@ -16,3 +16,7 @@ class DBBase:
     @abstractmethod
     def filter(self, **kwargs):
         return
+
+    @abstractmethod
+    def remove(self, **kwargs):
+        return

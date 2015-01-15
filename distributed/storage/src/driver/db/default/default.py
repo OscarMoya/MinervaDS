@@ -2,28 +2,23 @@ from distributed.storage.src.base.db import DBBase
 import threading
 
 try:
-    import cPicle as pickle
+    import cPickle as pickle
 except:
     import pickle
 
 
-class FileDB(DBBase):
+class DefaultDB(DBBase):
 
     def __init__(self):
-        self.DB_NAME = "file_db"
+        self.DB_NAME = None
 
     def save(self, **kwargs):
         #first, get the most updated data, just in case
-        old_entry = self.filter(**kwargs)
-        if not old_entry:
-            data = self.load()
-            data.append(kwargs)
-            self.__write(data)
-        else:
-            #it should be just one coincidence, just need to update the entry
-            self.update(old_entry, kwargs)
-
-        return
+        data = self.load()
+        id = kwargs.pop("id")
+        data[id] = kwargs
+        self.__write(data)
+        return True
 
     def load(self, **kwargs):
         if not kwargs:
@@ -61,11 +56,6 @@ class FileDB(DBBase):
                 data = pickle.load(f)
                 f.close()
         return data
-
-    def __update(self, old_entry, new_entry):
-         self.__remove(old_entry)
-         self.save(new_entry)
-
 
     def __write(self, data):
         with threading.lock():
