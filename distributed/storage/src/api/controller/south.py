@@ -1,5 +1,6 @@
 from distributed.storage.src.base.endpointnorth import EndPointNorthBase
 from distributed.storage.src.util.threadmanager import ThreadManager
+from SimpleXMLRPCServer import SimpleXMLRPCServer
 import xmlrpclib
 
 class ControllerSouthServer(EndPointNorthBase):
@@ -11,7 +12,7 @@ class ControllerSouthServer(EndPointNorthBase):
         return self.__driver.join(client_id, mgmt_ip, data_ip)
 
     def leave(self, client_id):
-        return  self.__driver.leave()
+        return self.__driver.leave()
 
     def read_request(self, client_id, file_id):
         return self.__driver.read_request(client_id, file_id)
@@ -27,7 +28,7 @@ class ControllerSouthServerHandler:
         self.__driver = driver
 
     def set_up_server(self, ip, port):
-        self.__server = xmlrpclib.SimpleXMLRPCServer((ip, port))
+        self.__server = SimpleXMLRPCServer((ip, port))
         self.__server.register_instance(ControllerSouthServer(self.__driver))
         return True
 

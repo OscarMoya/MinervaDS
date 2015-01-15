@@ -3,7 +3,7 @@ from abc import abstractmethod
 
 class ControllerSouthBase:
 
-    __metaclass__ == ABCMeta
+    __metaclass__ = ABCMeta
 
     @abstractmethod
     def ping(self):

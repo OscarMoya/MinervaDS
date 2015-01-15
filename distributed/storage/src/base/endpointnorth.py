@@ -3,7 +3,7 @@ from abc import abstractmethod
 
 class EndPointNorthBase:
 
-    __metaclass__ == ABCMeta
+    __metaclass__ = ABCMeta
     
     @abstractmethod
     def join(self, id, mgmt_ip, data_ip):
@@ -14,7 +14,7 @@ class EndPointNorthBase:
         return
 
     @abstractmethod
-    def read_request(self, file_id):
+    def read_request(self, client_id, file_id):
         return
 
     @abstractmethod

@@ -6,15 +6,15 @@ class ServerEastAPI(EndPointEastBase):
     def __init__(self):
         self.__server_east_channel = None
 
-    def ping(self):
+    def ping(self, server_param):
         #result = self.__controller_north_channel.leave(client_id)
         return
 
-    def read(self, file_id):
+    def read(self, client_id, file_id, server_param):
         #result = self.__controller_north_channel.read_request(client_id, file_id)
         return
 
-    def write(self, file_size, user_requirements):
+    def write(self, file_data, file_id, server_param):
         #result = self.__controller_north_channel.write_request(file_size, user_requirements)
         return
 
