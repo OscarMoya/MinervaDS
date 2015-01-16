@@ -10,10 +10,11 @@ class ServerEastAPI(EndPointEastBase):
         #result = self.__controller_north_channel.leave(client_id)
         return
 
-    def read(self, client_id, file_id, server_param):
+    def read(self, client_id, file_id):
         #result = self.__controller_north_channel.read_request(client_id, file_id)
         return
 
+    #TODO Remove server_param, add chunk_type
     def write(self, file_data, file_id, server_param):
         #result = self.__controller_north_channel.write_request(file_size, user_requirements)
         return

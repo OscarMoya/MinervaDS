@@ -10,7 +10,7 @@ class EndPointEastBase:
         return
 
     @abstractmethod
-    def read(self, client_id, file_id, server_param):
+    def read(self, client_id, file_id):
         return
 
     @abstractmethod
