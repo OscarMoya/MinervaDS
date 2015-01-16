@@ -8,8 +8,7 @@ class ChannelEngine:
         pass
 
     def __get_python_file(self, cType):
-        #TODO: get_python_file(channel_type)
-        raise NotImplementedError
+        return cType + ".py"
 
     def load_type(self, channel_type):
         channel_module = None

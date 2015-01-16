@@ -36,7 +36,7 @@ class ControllerSouthDriver(EndPointNorthBase):
                   "B": server_b.get("server_url"),
                   "AxB":server_c.get("server_url")}
 
-        self.__alert_pipe(self.read_request, client_id, file_id)
+        self.__alert_pipe(self.read_request, client_id=client_id, file_id=file_id)
         return result
 
     def write_request(self, client_id, file_size, user_requirements):
@@ -58,7 +58,7 @@ class ControllerSouthDriver(EndPointNorthBase):
                   "server_b": server_b.get("url"),
                   "server_c": server_c.get("url"),}
 
-        self.__alert_pipe(self.write_request, client_id, file_id)
+        self.__alert_pipe(self.write_request, client_id=client_id, file_id=file_id)
         return result
 
     def start(self):
