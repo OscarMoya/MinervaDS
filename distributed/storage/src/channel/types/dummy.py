@@ -10,11 +10,11 @@ class DummyChannel(EndPointEastBase):
     def ping(self):
         return self.__client.ping()
 
-    def read(self, file_id):
+    def read(self, client_id, file_id):
         return self.__client.read(file_id)
 
-    def write(self, file, file_id):
-        return self.__client.write(file, file_id)
+    def write(self, file_data, file_id, chunk_type):
+        return self.__client.write(file_data, file_id)
 
     def get_url(self):
         return self.__url

@@ -5,21 +5,25 @@ import xmlrpclib
 
 
 class ServerWestServer(EndPointEastBase):
+    """
+    Server side, receiver
+    """
 
     def __init__(self, driver):
         self.__driver = driver
 
-    def ping(self, server_param):
+    def ping(self,):
         return self.__driver.ping()
 
     def syn(self):
         return self.__driver.send_sync()
 
-    def read(self, client_id, file_id, server_param):
+    def read(self, client_id, file_id):
         return self.__driver.read_data()
 
-    def write(self, file_data, file_id, server_param):
+    def write(self, file_data, file_id, chunk_type):
         return self.__driver.write_data()
+
 
 class ServerWestServerHandler:
 
@@ -35,6 +39,7 @@ class ServerWestServerHandler:
     def start_server(self):
         self.__server.serve_forever()
         return True
+
 
 class ServerWestAPI(EndPointEastBase):
 

@@ -2,22 +2,25 @@ from distributed.storage.src.base.endpointeast import EndPointEastBase
 import xmlrpclib
 
 class ServerEastAPI(EndPointEastBase):
+    """
+    Client side, sender
+    """
 
     def __init__(self):
         self.__server_east_channel = None
 
-    def ping(self, server_param):
-        #result = self.__controller_north_channel.leave(client_id)
-        return
+    def ping(self,):
+        result = self.__server_east_channel.ping()
+        return self.__process_result(result)
 
     def read(self, client_id, file_id):
-        #result = self.__controller_north_channel.read_request(client_id, file_id)
-        return
+        result = self.__server_east_channel.read(client_id, file_id)
+        return self.__process_result(result)
 
     #TODO Remove server_param, add chunk_type
-    def write(self, file_data, file_id, server_param):
-        #result = self.__controller_north_channel.write_request(file_size, user_requirements)
-        return
+    def write(self, file_data, file_id, chunk_type):
+        result = self.__server_east_channel.write(file_data, file_id,)
+        return self.__process_result(result)
 
     def __initialize(self, ip, port):
         self.__server_east_channel = xmlrpclib.ServerProxy(ip, port)

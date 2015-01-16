@@ -6,7 +6,7 @@ class EndPointEastBase:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def ping(self, server_param):
+    def ping(self,):
         return
 
     @abstractmethod
@@ -14,7 +14,7 @@ class EndPointEastBase:
         return
 
     @abstractmethod
-    def write(self, file_data, file_id, server_param):
+    def write(self, file_data, file_id, chunk_type):
         return
 
     @abstractmethod

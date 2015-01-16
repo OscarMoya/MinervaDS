@@ -4,7 +4,7 @@ import uuid
 
 class ControllerSouthDriver(EndPointNorthBase):
 
-    def __init__(self, pipe=None , db=None):
+    def __init__(self, pipe=None, db=None):
         self.__endpoint_db = None
         self.__file_db = None
         self.__pipe = pipe
@@ -19,7 +19,7 @@ class ControllerSouthDriver(EndPointNorthBase):
     def join(self, id, type, mgmt_ip, data_ip):
         url = "http://%s:%d" % (mgmt_ip, DSConfig.DEFAULT_MGMT_PORT)
         result = self.__endpoint_db.save(id=id, type=type, url=mgmt_ip, data_ip=data_ip)
-        self.__alert_pipe(self.join, id=id, type=type, url= url, data_ip=data_ip)
+        self.__alert_pipe(self.join, id=id, type=type, url=url, data_ip=data_ip)
         return result
 
     def leave(self, id):
@@ -39,7 +39,7 @@ class ControllerSouthDriver(EndPointNorthBase):
         self.__alert_pipe(self.read_request, client_id, file_id)
         return result
 
-    def write_request(self,client_id, file_size, user_requirements):
+    def write_request(self, client_id, file_size, user_requirements):
         servers = self.__endpoint_db.filter(type=self.SERVER_TYPE)
         file_id = uuid.uuid4()
         #TODO: do the magic getting the most suitable servers :)
@@ -69,7 +69,7 @@ class ControllerSouthDriver(EndPointNorthBase):
         return self.__file_db
 
     def get_endpoint_db(self):
-        return self.end_point_db
+        return self.__endpoint_db
 
     def set_file_db(self, db):
         self.__file_db = db
