@@ -32,5 +32,5 @@ class ClientNorthAPI(EndPointNorthBase):
     def get_controller_north_channel(self):
         return self.__controller_north_channel
 
-    def set_controller_north_ip(self, ip):
-        self.__controller_north_ip = ip
+    def set_controller_north_channel(self, channel):
+        self.__controller_north_channel = channel

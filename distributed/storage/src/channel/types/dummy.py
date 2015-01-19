@@ -5,7 +5,7 @@ class DummyChannel(EndPointEastBase):
 
     def __init__(self, url=None):
         self.__url = url
-        self.__client = None
+        self.__medium = None
 
     def ping(self):
         return self.__client.ping()
@@ -23,7 +23,7 @@ class DummyChannel(EndPointEastBase):
         return url
 
     def start(self):
-        self.__client = xmlrpclib.ServerProxy(self.__url)
+        self.__medium = xmlrpclib.ServerProxy(self.__url)
 
 def launch():
     return DummyChannel
