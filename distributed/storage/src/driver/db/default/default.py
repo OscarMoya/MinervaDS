@@ -1,11 +1,10 @@
 from distributed.storage.src.base.db import DBBase
 import threading
-
+import os
 try:
     import cPickle as pickle
 except:
     import pickle
-
 
 class DefaultDB(DBBase):
 
@@ -18,6 +17,7 @@ class DefaultDB(DBBase):
         id = kwargs.pop("id")
         data[id] = kwargs
         self.__write(data)
+
         return True
 
     def load(self, **kwargs):
@@ -25,42 +25,63 @@ class DefaultDB(DBBase):
             #load_all
             return self.__load_all()
         else:
-            return self.filter(kwargs)
+            return self.filter(**kwargs)
 
     def filter(self, **kwargs):
         matches = list()
-        table = self.load_all()
-        for entry in table:
+        table = self.__load_all()
+
+        for id in table:
+            entry = table[id]
+            id_match = None
+
             matched = False
+
+            if kwargs.has_key("id"):
+                id_match = False
+                if not id == kwargs.pop("id"):
+                    continue
+                else:
+                    id_match = True
+
             for field, value in kwargs:
                 if not entry.get(field) == value:
+                    matched = False
                     break
+                matched = True
+
+            if not kwargs and id_match in[True, False]:
+                matched = id_match
+            elif kwargs and id_match in[True, False]:
+                matched = matched and id_match
+            elif kwargs and not id_match in[True, False]:
+                pass
+
             if matched:
-                matches.append(entry)
+                matches.append({id:entry})
 
         return matches
 
-    def remove(self, entry):
+    def remove(self, **kwargs):
         data = self.load()
-        id = entry.get("id")
-        i = 0 #I add manual counter, I don't trust possible hash matches done by list.index() on dicts
-        for entry in data:
-            if entry.get("id") == id:
-                return i
-                i += 1
-        data.pop(i)
+        id = kwargs.get("id")
+        if not id:
+            raise Exception("Missing ID")
+        data.pop(id)
+        self.__write(data)
 
     def __load_all(self):
         with threading.Lock():
-                f = open(self.DB_NAME, "a+")
+            try:
+                f = open(self.DB_NAME, "r+")
                 data = pickle.load(f)
                 f.close()
+            except:
+                data = dict()
         return data
 
     def __write(self, data):
-        with threading.lock():
-            f = file.open(self.DB_NAME, "wb")
+        with threading.Lock():
+            f = open(self.DB_NAME, "wb")
             pickle.dump(data, f)
             f.close()
-
-
