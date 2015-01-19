@@ -23,7 +23,7 @@ class ControllerSouthDriver(EndPointNorthBase):
     def join(self, id, type, mgmt_ip, data_ip):
         url = "http://%s:%d" % (mgmt_ip, DSConfig.DEFAULT_MGMT_PORT)
         result = self.__endpoint_db.save(id=id, type=type, url=mgmt_ip, data_ip=data_ip)
-        self.__alert_pipe(self.join, id=id, type=type, url= url, data_ip=data_ip)
+        self.__alert_pipe(self.join, id=id, type=type, url=url, data_ip=data_ip)
         return result
 
     @processoutput
@@ -44,7 +44,7 @@ class ControllerSouthDriver(EndPointNorthBase):
         self.__alert_pipe(self.read_request, client_id=client_id, file_id=file_id)
         return result
 
-    def write_request(self,client_id, file_size, user_requirements):
+    def write_request(self, client_id, file_size, user_requirements):
         servers = self.__endpoint_db.filter(type=self.SERVER_TYPE)
         file_id = uuid.uuid4()
         #TODO: do the magic getting the most suitable servers :)
@@ -60,9 +60,9 @@ class ControllerSouthDriver(EndPointNorthBase):
 
         result = {"file_id": file_id,
 
-                  self.CHUNK_A_TYPE: server_a.get("server_url"),
-                  self.CHUNK_B_TYPE: server_b.get("server_url"),
-                  self.CHUNK_AXB_TYPE: server_c.get("server_url"),}
+        self.CHUNK_A_TYPE: server_a.get("server_url"),
+        self.CHUNK_B_TYPE: server_b.get("server_url"),
+        self.CHUNK_AXB_TYPE: server_c.get("server_url"),}
 
         self.__alert_pipe(self.write_request, client_id=client_id, file_id=file_id)
         return result

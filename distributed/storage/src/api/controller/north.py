@@ -11,6 +11,14 @@ class ControllerNorthServer(ControllerSouthBase):
         result = self.__server.ping()
         return self.__process_result(result)
 
+    def req_response(self):
+        """
+        Controller message sent to Client to confirm a REQ
+        reception on Controller from Client
+        """
+        result = self.__server.true_response()
+        return self.__process_result(result)
+
     def syn_request(self):
         result = self.__server.syn_request()
         return self.__process_result(result)

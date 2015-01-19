@@ -4,10 +4,11 @@ from SimpleXMLRPCServer import SimpleXMLRPCServer
 import xmlrpclib
 
 
-class ServerWestServer(EndPointEastBase):
+class ClientWestServer(EndPointEastBase):
     """
     Server side, receiver
     """
+    #TODO Review
 
     def __init__(self, driver):
         self.__driver = driver
@@ -25,7 +26,7 @@ class ServerWestServer(EndPointEastBase):
         return self.__driver.write_data()
 
 
-class ServerWestServerHandler:
+class ClientWestServerHandler:
 
     def __init__(self, driver):
         self.__server = None
@@ -33,7 +34,7 @@ class ServerWestServerHandler:
 
     def set_up_server(self, ip, port):
         self.__server = SimpleXMLRPCServer((ip, port))
-        self.__server.register_instance(ServerWestServer(self.__driver))
+        self.__server.register_instance(ClientWestServer(self.__driver))
         return True
 
     def start_server(self):
@@ -41,10 +42,10 @@ class ServerWestServerHandler:
         return True
 
 
-class ServerWestAPI(EndPointEastBase):
+class ClientWestAPI(EndPointEastBase):
 
     def __init__(self, driver):
-        self.__handler = ServerWestServerHandler(driver)
+        self.__handler = ClientWestServerHandler(driver)
 
     def start_api(self, ip, port):
         self.__handler.set_up_server(ip, port)
