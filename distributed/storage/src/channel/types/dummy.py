@@ -3,9 +3,10 @@ import xmlrpclib
 
 class DummyChannel(EndPointEastBase):
 
-    def __init__(self, url=None):
+    def __init__(self, url=None, client=None):
         self.__url = url
         self.__medium = None
+        self.__client = client
 
     def ping(self):
         return self.__client.ping()

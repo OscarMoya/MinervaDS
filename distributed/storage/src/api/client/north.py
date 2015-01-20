@@ -18,8 +18,8 @@ class ClientNorthAPI(EndPointNorthBase):
         result = self.__controller_north_channel.read_request(client_id, file_id)
         return self.__process_result(result)
 
-    def write_request(self, file_size, user_requirements):
-        result = self.__controller_north_channel.write_request(file_size, user_requirements)
+    def write_request(self, client_id, file_size, user_requirements):
+        result = self.__controller_north_channel.write_request(client_id, file_size, user_requirements)
         return self.__process_result(result)
 
     def initialize(self, ip, port):
