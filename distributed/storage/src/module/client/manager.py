@@ -11,9 +11,13 @@ from distributed.storage.src.util.packetmanager import PacketManager
 
 from distributed.storage.src.channel.engine import ChannelEngine
 
+from distributed.storage.src.module.nf.manager import NF_Manager
+
+import os
 import time
 import uuid
 import xmlrpclib
+
 
 class ClientManager:
 
@@ -21,7 +25,7 @@ class ClientManager:
         if not id:
             id = uuid.uuid4()
 
-        self.__nf_manager = None
+        self.__nf_manager = NF_Manager()
 
         self.CHUNK_A_TYPE = "A"
         self.CHUNK_B_TYPE = "B"
@@ -185,6 +189,7 @@ class ClientManager:
 
 
     def __get_file_size(self, file_size):
-        #TODO implement
-        return None
+        #TODO Review it!
+        st = os.stat(file_size)
+        return st.st_size
 
