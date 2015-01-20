@@ -18,9 +18,10 @@ import xmlrpclib
 class ClientManager:
 
     def __init__(self, db=None, id=None):
-
         if not id:
             id = uuid.uuid4()
+
+        self.__nf_manager = None
 
         self.CHUNK_A_TYPE = "A"
         self.CHUNK_B_TYPE = "B"
@@ -59,7 +60,7 @@ class ClientManager:
     def upload_file(self, file, requirements):
         file_size = self.__get_file_size(file)
 
-        servers = self.__north_backend.write_request(file_size, requirements)
+        servers = self.__north_backend.write_request(self.__id, file_size, requirements)
 
         result = self.__send(servers, file)
         return result
@@ -109,7 +110,7 @@ class ClientManager:
         channel_b = self.__mount_channel(server_b.get("url"), server_b.get("channel"))
         channel_c = self.__mount_channel(server_axb.get("url"), server_axb.get("channel"))
 
-        chunk_a, chunk_b, chunk_c = self.__get_chunks(file)
+        chunk_a, chunk_b, chunk_c = self.__split_file(file)
 
         result_a = channel_a.write(chunk_a)
         result_b = channel_b.write(chunk_b)
@@ -126,7 +127,18 @@ class ClientManager:
             should_continue = should_continue and chunk_value
 
         if should_continue:
-            return self.__construct_file(file_id)
+            chunks = self.__load_chunks(file_id) #TODO Implement
+            return self.__construct_file(chunks)
+
+
+    def __construct_file(self, file_chunks):
+        self.__nf_manager.reconstruct(file_chunks)
+        pass
+
+
+    def __split_file(self, file):
+        self.__nf_manager.deconstruct(file)
+        pass
 
 
     def __mount_channel(self, url, channel_type):
@@ -161,7 +173,7 @@ class ClientManager:
     def __process_read(self, **kwargs):
         #TODO
         pass
-    
+
 
     def __process_write(self, **kwargs):
 
