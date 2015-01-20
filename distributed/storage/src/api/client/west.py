@@ -1,7 +1,6 @@
 from distributed.storage.src.base.endpointeast import EndPointEastBase
 from distributed.storage.src.util.threadmanager import ThreadManager
 from SimpleXMLRPCServer import SimpleXMLRPCServer
-import xmlrpclib
 
 
 class ClientWestServer(EndPointEastBase):
