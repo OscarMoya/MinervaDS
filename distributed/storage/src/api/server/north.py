@@ -3,27 +3,27 @@ import xmlrpclib
 
 class ServerNorthAPI(EndPointNorthBase):
 
-    def __init__(self):
-        self.__controller_north_channel = None
+    def __init__(self, channel=None):
+        self.__controller_north_channel = channel
 
-    def join(self, server_id, type, mgmt_ip, data_ip):
-        result = self.__controller_north_channel.join(client_id, mgmt_ip, data_ip)
+    def join(self, endpoint_id, type, mgmt_ip, data_ip):
+        result = self.__controller_north_channel.join(endpoint_id, mgmt_ip, data_ip)
         return self.__process_result(result)
 
-    def leave(self, server_id):
-        result = self.__controller_north_channel.leave(client_id)
+    def leave(self, endpoint_id):
+        result = self.__controller_north_channel.leave(endpoint_id)
         return self.__process_result(result)
 
-    def read_request(self, server_id, file_id):
-        result = self.__controller_north_channel.read_request(client_id, file_id)
+    def read_request(self, endpoint_id, file_id):
+        result = self.__controller_north_channel.read_request(endpoint_id, file_id)
         return self.__process_result(result)
 
-    def write_request(self, server_id, file_size, user_requirements):
-        result = self.__controller_north_channel.write_request(client_id, file_size, user_requirements)
+    def write_request(self, endpoint_id, file_size, user_requirements):
+        result = self.__controller_north_channel.write_request(endpoint_id, file_size, user_requirements)
         return self.__process_result(result)
 
-    def initialize(self, ip, port):
-        self.__controller_north_channel = xmlrpclib.ServerProxy(ip, port)
+    def start(self, url):
+        self.__controller_north_channel = xmlrpclib.ServerProxy(url)
 
     def __process_result(self, result):
         #TODO: Do something. like raise exceptions if needed

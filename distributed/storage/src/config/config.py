@@ -8,5 +8,5 @@ class DSConfig:
     CLIENT_TYPE = "client"
     SERVER_TYPE = "server"
 
-    CONTROLLER_URL = "10.255.250.1"
+    CONTROLLER_URL = "10.10.254.1:9696"
 

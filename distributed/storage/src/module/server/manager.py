@@ -2,6 +2,7 @@ from distributed.storage.src.api.server.west import ServerWestAPI
 from distributed.storage.src.api.server.north import ServerNorthAPI
 from distributed.storage.src.api.server.south import ServerSouthAPI
 
+from distributed.storage.src.driver.controller.default.south import ControllerSouthDriver
 from distributed.storage.src.driver.server.default.west import ServerWestDriver
 from distributed.storage.src.driver.server.default.south import ServerSouthDriver
 from distributed.storage.src.driver.db.endpoint.default import DefaultEndPointDB
@@ -42,6 +43,7 @@ class ServerManager:
         self.__configure_south_backend()
         self.__configure_north_backend()
 
+
     def __configure_west_backend(self):
         pipe = self
         db = DefaultEndPointDB()
@@ -62,16 +64,18 @@ class ServerManager:
     def __configure_north_backend(self):
         packet_manager = PacketManager
         pipe = self
-        driver = ServerSouthDriver(packet_manager, pipe)
-        api = ServerSouthAPI(driver)
-        self.__south_backend = api
+        driver = ControllerSouthDriver(packet_manager, pipe)
+        api = ServerNorthAPI(driver)
+        self.__north_backend = api
 
 
     def start(self, mgmt_ip, mgmt_port, data_ip, data_port):
         self.__south_backend.start(mgmt_ip, mgmt_port)
         self.__west_backend.start(data_ip, data_port)
-        self.__db.load_all()
         self.__north_backend.join(self.__id, self.__type, mgmt_ip, data_ip)
+        if self.__db:
+            self.__db.load_all()
+
 
 
     def alert(self, func, **kwargs):
@@ -87,13 +91,34 @@ class ServerManager:
         #TODO implement this function
         pass
 
+
     def __process_read_request(self, **kwargs):
         pass
+
 
     def __process_ping(self, **kwargs):
         pass
 
+
     def send_to(self, file_id, endpoint_params):
         pass
 
+
+    def get_north_backend(self):
+        return self.__north_backend
+
+
+    def get_south_backend(self):
+        return self.__south_backend
+
+
+    def get_east_backend(self):
+        return self.__east_backend
+
+
+    def get_west_backend(self):
+        return self.__west_backend
+
+    def get_id(self):
+        return self.__id
 

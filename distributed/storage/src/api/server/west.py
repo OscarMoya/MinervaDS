@@ -31,6 +31,7 @@ class ServerWestServerHandler:
         self.__server = None
         self.__driver = driver
 
+
     def set_up_server(self, ip, port):
         self.__server = SimpleXMLRPCServer((ip, port))
         self.__server.register_instance(ServerWestServer(self.__driver))
@@ -41,12 +42,14 @@ class ServerWestServerHandler:
         return True
 
 
-class ServerWestAPI(EndPointEastBase):
+class ServerWestAPI():
 
     def __init__(self, driver):
         self.__handler = ServerWestServerHandler(driver)
+        self.__threaded = None
 
-    def start_api(self, ip, port):
+    def start(self, ip, port):
         self.__handler.set_up_server(ip, port)
         ThreadManager.start_method_in_new_thread(self.__handler.start_server, [])
         return True
+
