@@ -31,7 +31,6 @@ class ServerSouthServerHandler:
 
 class ServerSouthAPI:
 
-
     def __init__(self, driver):
         self.__handler = ServerSouthServerHandler(driver)
 
