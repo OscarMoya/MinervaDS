@@ -167,6 +167,7 @@ class ClientManager:
             return self.__process_write(**kwargs)
 
 
+
     def __process_ping(self, **kwargs):
         #TODO Log the call
         pass
