@@ -60,7 +60,7 @@ class NF_Manager:
         types, values = self.chunk_parser(file_chunks)
 
         #TODO: For now, reconstruct just merges chunks' strings
-        num_chunks = len(file_chunks)
+        #num_chunks = len(file_chunks)
 
         """
         if a and not b:
