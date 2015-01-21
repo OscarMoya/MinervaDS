@@ -50,7 +50,7 @@ class ClientManager:
 
     def configure(self):
         self.__configure_west_backend()
-        self.__configure_south_backend(data_ip=None, data_port=None)
+        self.__configure_south_backend(data_ip=None, data_port=self.__default_data_port)
         self.__configure_north_backend()
 
 
@@ -165,7 +165,6 @@ class ClientManager:
             return self.__process_read(**kwargs)
         elif func.__name__ == "write":
             return self.__process_write(**kwargs)
-
 
 
     def __process_ping(self, **kwargs):
