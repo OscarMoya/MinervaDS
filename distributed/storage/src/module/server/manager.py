@@ -1,5 +1,15 @@
 from distributed.storage.src.config.config import DSConfig
 
+from distributed.storage.src.api.server.west import ServerWestAPI
+from distributed.storage.src.api.server.north import ServerNorthAPI
+from distributed.storage.src.api.server.south import ServerSouthAPI
+
+from distributed.storage.src.driver.server.default.west import ServerWestDriver
+from distributed.storage.src.driver.server.default.south import ServerSouthDriver
+from distributed.storage.src.driver.controller.default.south import ControllerSouthDriver
+
+from distributed.storage.src.driver.db.endpoint.default import DefaultEndPointDB
+
 import uuid
 
 class ServerManager:
@@ -30,13 +40,26 @@ class ServerManager:
         self.__configure_north_backend()
 
     def __configure_west_backend(self):
-        pass
+        pipe = self
+        db = DefaultEndPointDB()
+        driver = ServerWestDriver(db, pipe)
+        api = ServerWestAPI(driver)
+        self.__west_backend = api
+
 
     def __configure_south_backend(self):
-        pass
+        pipe = self
+        db = DefaultEndPointDB()
+        driver = ControllerSouthDriver(db, pipe)
+        api = ServerNorthAPI(driver)
+        self.__south_backend = api
 
     def __configure_north_backend(self):
-        pass
+        pipe = self
+        db = DefaultEndPointDB()
+        driver = ServerSouthDriver(db, pipe)
+        api = ServerSouthAPI(driver)
+        self.__north_backend = api
 
     def start(self, mgmt_ip, mgmt_port, data_ip, data_port):
         self.__south_backend.start(mgmt_ip, mgmt_port)
@@ -55,5 +78,20 @@ class ServerManager:
 
     def send_to(self, file_id, endpoint_params):
         pass
+
+    def get_id(self):
+        return self.__id
+
+    def get_north_backend(self):
+        return self.__north_backend
+
+    def get_south_backend(self):
+        return self.__south_backend
+
+    def get_west_backend(self):
+        return self.__west_backend
+
+    def get_east_backend(self):
+        return self.__east_backend
     
 
