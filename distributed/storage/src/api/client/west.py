@@ -5,9 +5,8 @@ from SimpleXMLRPCServer import SimpleXMLRPCServer
 
 class ClientWestServer(EndPointEastBase):
     """
-    Server side, receiver
+    Client-server side, receiver
     """
-    #TODO Review
 
     def __init__(self, driver):
         self.__driver = driver
@@ -28,16 +27,16 @@ class ClientWestServer(EndPointEastBase):
 class ClientWestServerHandler:
 
     def __init__(self, driver):
-        self.__server = None
+        self.__client = None
         self.__driver = driver
 
-    def set_up_server(self, ip, port):
-        self.__server = SimpleXMLRPCServer((ip, port))
-        self.__server.register_instance(ClientWestServer(self.__driver))
+    def set_up_client(self, ip, port):
+        self.__client = SimpleXMLRPCServer((ip, port))
+        self.__client.register_instance(ClientWestServer(self.__driver))
         return True
 
-    def start_server(self):
-        self.__server.serve_forever()
+    def start_client(self):
+        self.__client.serve_forever()
         return True
 
 
@@ -47,6 +46,6 @@ class ClientWestAPI(EndPointEastBase):
         self.__handler = ClientWestServerHandler(driver)
 
     def start_api(self, ip, port):
-        self.__handler.set_up_server(ip, port)
-        ThreadManager.start_method_in_new_thread(self.__handler.start_server, [])
+        self.__handler.set_up_client(ip, port)
+        ThreadManager.start_method_in_new_thread(self.__handler.start_client, [])
         return True

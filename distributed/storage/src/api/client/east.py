@@ -3,9 +3,8 @@ import xmlrpclib
 
 class ClientEastAPI(EndPointEastBase):
     """
-    Client side, sender
+    Client-client side, sender
     """
-    #TODO Review
 
     def __init__(self):
         self.__client_east_channel = None
@@ -30,9 +29,9 @@ class ClientEastAPI(EndPointEastBase):
         #TODO Do something. like raise exceptions if needed
         return result
 
-    def get_server_east_channel(self):
+    def get_client_east_channel(self):
         return self.__client_east_channel
 
-    def set_server_east_ip(self, ip):
+    def set_client_east_ip(self, ip):
         self.__client_east_ip = ip
 

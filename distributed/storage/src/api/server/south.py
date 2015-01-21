@@ -28,7 +28,9 @@ class ServerSouthServerHandler:
         self.__server.serve_forever()
         return True
 
-class ServerSouthAPI():
+
+class ServerSouthAPI:
+
 
     def __init__(self, driver):
         self.__handler = ServerSouthServerHandler(driver)

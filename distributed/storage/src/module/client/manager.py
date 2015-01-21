@@ -11,9 +11,13 @@ from distributed.storage.src.util.packetmanager import PacketManager
 
 from distributed.storage.src.channel.engine import ChannelEngine
 
+from distributed.storage.src.module.nf.manager import NF_Manager
+
+import os
 import time
 import uuid
 import xmlrpclib
+
 
 class ClientManager:
 
@@ -46,7 +50,7 @@ class ClientManager:
 
     def configure(self):
         self.__configure_west_backend()
-        self.__configure_south_backend()
+        self.__configure_south_backend(data_ip=None, data_port=None)
         self.__configure_north_backend()
 
 
@@ -77,7 +81,7 @@ class ClientManager:
         self.__requests[file_id] = local_request
 
 
-    def __configure_south_backend(self, data_ip, data_port, pipe):
+    def __configure_south_backend(self, data_ip, data_port):
         packet_manager = PacketManager
         pipe = self
         driver = ClientSouthDriver(packet_manager, pipe)
@@ -111,7 +115,12 @@ class ClientManager:
         channel_b = self.__mount_channel(server_b.get("url"), server_b.get("channel"))
         channel_c = self.__mount_channel(server_axb.get("url"), server_axb.get("channel"))
 
-        chunk_a, chunk_b, chunk_c = self.__split_file(file)
+        chunk_list = self.__split_file(file)
+
+        chunk_a = chunk_list.pop(0)
+        chunk_b = chunk_list.pop(0)
+        chunk_c = chunk_list.pop(0)
+        del chunk_list
 
         result_a = channel_a.write(chunk_a)
         result_b = channel_b.write(chunk_b)
@@ -138,8 +147,8 @@ class ClientManager:
 
 
     def __split_file(self, file):
-        self.__nf_manager.deconstruct(file)
-        pass
+        chunked = self.__nf_manager.deconstruct(file)
+        return chunked
 
 
     def __mount_channel(self, url, channel_type):
@@ -186,6 +195,7 @@ class ClientManager:
 
 
     def __get_file_size(self, file_size):
-        #TODO implement
-        return None
+        #TODO Review it!
+        st = os.stat(file_size)
+        return st.st_size
 
