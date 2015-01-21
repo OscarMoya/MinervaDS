@@ -53,6 +53,7 @@ class ClientManager:
     def start(self, mgmt_ip, mgmt_port, data_ip, data_port):
         self.__south_backend.start(mgmt_ip, mgmt_port)
         self.__west_backend.start(data_ip, data_port)
+        self.__norht_backend.initialize()
         self.__db.load_all()
         self.__north_backend.join(self.__id, self.__type, mgmt_ip, data_ip)
 
