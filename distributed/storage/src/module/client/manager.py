@@ -119,6 +119,7 @@ class ClientManager:
         chunk_a = chunk_list.pop(0)
         chunk_b = chunk_list.pop(0)
         chunk_c = chunk_list.pop(0)
+        del chunk_list
 
         result_a = channel_a.write(chunk_a)
         result_b = channel_b.write(chunk_b)
