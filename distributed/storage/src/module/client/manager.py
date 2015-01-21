@@ -140,16 +140,13 @@ class ClientManager:
             chunks = self.__load_chunks(file_id) #TODO Implement
             return self.__construct_file(chunks)
 
-
     def __construct_file(self, file_chunks):
         self.__nf_manager.reconstruct(file_chunks)
         pass
 
-
     def __split_file(self, file):
         chunked = self.__nf_manager.deconstruct(file)
         return chunked
-
 
     def __mount_channel(self, url, channel_type):
         engine = ChannelEngine()
