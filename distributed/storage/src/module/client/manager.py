@@ -25,7 +25,7 @@ class ClientManager:
         if not id:
             id = uuid.uuid4()
 
-        self.__nf_manager = NF_Manager()
+        self.__nf_manager = None
 
         self.CHUNK_A_TYPE = "A"
         self.CHUNK_B_TYPE = "B"

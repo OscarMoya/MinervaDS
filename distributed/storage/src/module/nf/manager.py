@@ -1,77 +1,68 @@
 import binascii
-import sys
-
 
 class NF_Manager:
 
     def __init__(self):
 
-        self.__a_chunk = None
-        self.__b_chunk = None
-        self.__c_chunk = None
-
+        self.configure()
         self.__full_chunk = None
+
+    def configure(self):
+        pass
 
     def __str_to_bits(self, string):
         return binascii.b2a_hex(string)
 
     def chunk_parser(self, file_chunks):
+        """
+        file_chunks = list<chunk>()
+        chunk = {"type": "type",
+                "value": "string"}
+        """
         #TODO: Check file_chunks contents to determine how to proceed on chunk_type assignation
 
-        num_chunks = file_chunks.count(None)
+        types = list()
+        strings = list()
 
-        """
-        for num in xrange(num_chunks):
-            pass
-        """
+        for chunk in file_chunks():
+            types.append(chunk['type'])
+            strings.append(chunk['value'])
 
-        for chunk in file_chunks:
-            if chunk['type'] == "CHUNK_A_TYPE":
-                self.__a_chunk = chunk.get('value')
-            elif chunk['type'] == "CHUNK_B_TYPE":
-                self.__b_chunk = chunk.get('value')
-            else:       #chunk.type == "CHUNK_AXB_TYPE"
-                self.__c_chunk = chunk.get('value')
-
-        return self.__a_chunk, self.__b_chunk, self.__c_chunk
+        return types, strings
 
     def deconstruct(self, full_file):
+
         global length
+        file_chunks = list()
 
-        file_data = full_file.read()
 
-        hex_string = self.__str_to_bits(file_data)
+        hex_string = self.__str_to_bits(full_file)
 
         length = len(hex_string)
 
         a_flow = hex_string[0:length/2]
         b_flow = hex_string[length/2:]
         axorb_flow = hex(int(a_flow, 16) ^ int(b_flow, 16))[2:]
+
         if axorb_flow[-1] in '|L':
             axorb_flow = axorb_flow[:-1]
 
+        file_chunks.append({"type": "A", "value": a_flow})
+        file_chunks.append({"type": "B", "value": b_flow})
+        file_chunks.append({"type": "AxB", "value": axorb_flow})
 
-        return a_flow, b_flow, axorb_flow
+        return file_chunks
 
 
     def reconstruct(self, file_chunks):
 
-        #TODO: Call chunk_parser to get the tri-flows
-        a, b, axorb = self.chunk_parser(file_chunks)
+        #TODO: Call chunk_parser to get the n-flows types, values
+        types, values = self.chunk_parser(file_chunks)
+
+        #TODO: For now, reconstruct just merges chunks' strings
+        num_chunks = len(file_chunks)
 
         """
-        a = None
-        b = None
-        axorb = None
-        """
-
-        myList = [a, b, axorb]
-        print myList.count(None)
-
-        if myList.count(None) > 1:
-            print ("Unable To reconstruct the data: Two or more flows were not properly retrieved")
-            return
-
         if a and not b:
             b = hex(int(a, 16) ^ int(axorb, 16))[2:]
             if b[-1] in '|L':
@@ -81,6 +72,11 @@ class NF_Manager:
             a = hex(int(b, 16) ^ int(axorb, 16))[2:]
             if a[-1] in '|L':
                 a = a[:-1]
+        """
+        result = ""
 
-        result = a + b
-        return binascii.a2b_hex(result)
+        for string in values:
+            result += string
+
+        self.__full_chunk = binascii.a2b_hex(result)
+        return self.__full_chunk
