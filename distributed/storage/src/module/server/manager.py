@@ -68,15 +68,19 @@ class ServerManager:
         self.__north_backend.join(self.__id, self.__type, mgmt_ip, data_ip)
 
     def alert(self, func, **kwargs):
+        #TODO: Implement
         pass
 
     def __process_write(self, **kwargs):
+        #TODO: Implement
         pass
 
     def __process_ping(self, **kwargs):
+        #TODO: Implement
         pass
 
     def send_to(self, file_id, endpoint_params):
+        #TODO: Implement
         pass
 
     def get_id(self):

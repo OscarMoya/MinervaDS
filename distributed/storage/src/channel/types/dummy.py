@@ -26,5 +26,6 @@ class DummyChannel(EndPointEastBase):
     def start(self):
         self.__medium = xmlrpclib.ServerProxy(self.__url)
 
+
 def launch():
     return DummyChannel

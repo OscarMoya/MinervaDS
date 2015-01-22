@@ -12,14 +12,14 @@ class ControllerManager:
         self.__south_backend = None
         self.__north_backend = None
         self.__configure()
-        self.active_endpoints = list()
+        self.active_endpoints = dict()
 
     def start(self):
         self.__south_backend.start()
 
     def __configure(self):
-        self.__south_backend(self.__get_south_backend())
-        self.__north_backend(self.__get_north_backend())
+        self.__south_backend = self.__get_south_backend()
+        self.__north_backend = self.__get_north_backend()
 
     def __get_north_backend(self):
         north_backend = ControllerNorthServer()
@@ -30,10 +30,9 @@ class ControllerManager:
         south_backend_driver = ControllerSouthDriver(pipe)
         south_backend_driver.set_file_db(DefaultFileDB())
         south_backend_driver.set_endpoint_db(DefaultEndPointDB())
-        south_backend_driver.start() #Start DB
+        south_backend_driver.start()    #Start DB
 
         south_backend = ControllerSouthAPI(south_backend_driver)
-
         return south_backend
 
     def alert(self, func, **kwargs):
@@ -55,7 +54,7 @@ class ControllerManager:
         endpoint.send_sync()
 
     def __process_leave_event(self, **kwargs):
-        self.__remove_endpoint(self, kwargs.get("id"))
+        self.__remove_endpoint(kwargs.get("id"))
 
     def __process_read_request_event(self, **kwargs):
         #TODO probably just log the call
@@ -66,15 +65,14 @@ class ControllerManager:
         pass
 
     def __add_endpoint(self, **kwargs):
-        self.__active_endpoints[kwargs.get("id")] = {"type":kwargs.get("type"),
-                                                     "url":kwargs.get("url"),
+        self.active_endpoints[kwargs.get("id")] = {"type": kwargs.get("type"),
+                                                     "url": kwargs.get("url"),
                                                      "data_ip": kwargs.get("data_ip")}
 
     def __remove_endpoint(self, id):
         self.active_endpoints.pop(id)
 
-    def __mount_end_point(self, id):
-        endpoint = self.__active_endpoints.get(id)
-        mounted_endpoint = xmlrpclib.ServerProxy(endpoint.get("url"))
+    def __mount_endpoint(self, id):
+        endpoint = self.active_endpoints.get(id)
+        mounted_endpoint = xmlrpclib.ServerProxy("http://"+endpoint.get("url"))
         return mounted_endpoint
-

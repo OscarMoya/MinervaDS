@@ -40,7 +40,7 @@ class ClientWestServerHandler:
         return True
 
 
-class ClientWestAPI(EndPointEastBase):
+class ClientWestAPI:
 
     def __init__(self, driver):
         self.__handler = ClientWestServerHandler(driver)

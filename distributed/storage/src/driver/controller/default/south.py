@@ -59,10 +59,9 @@ class ControllerSouthDriver(EndPointNorthBase):
         self.__file_db.save(client_id=client_id, server_id=server_c.get("id"), file_id=file_id, chunk_type=self.CHUNK_AXB_TYPE)
 
         result = {"file_id": file_id,
-
-        self.CHUNK_A_TYPE: server_a.get("server_url"),
-        self.CHUNK_B_TYPE: server_b.get("server_url"),
-        self.CHUNK_AXB_TYPE: server_c.get("server_url"),}
+                  self.CHUNK_A_TYPE: server_a.get("server_url"),
+                  self.CHUNK_B_TYPE: server_b.get("server_url"),
+                  self.CHUNK_AXB_TYPE: server_c.get("server_url"), }
 
         self.__alert_pipe(self.write_request, client_id=client_id, file_id=file_id)
         return result

@@ -8,7 +8,7 @@ class ControllerSouthServer(EndPointNorthBase):
     def __init__(self, driver):
         self.__driver = driver
 
-    def join(self, client_id, mgmt_ip, data_ip):
+    def join(self, client_id, type, mgmt_ip, data_ip):
         return self.__driver.join(client_id, mgmt_ip, data_ip)
 
     def leave(self, client_id):
@@ -17,7 +17,7 @@ class ControllerSouthServer(EndPointNorthBase):
     def read_request(self, client_id, file_id):
         return self.__driver.read_request(client_id, file_id)
 
-    def write_request(self, file_size, user_requirements):
+    def write_request(self, client_id, file_size, user_requirements):
         return self.__driver.write_request(file_size, user_requirements)
 
 
@@ -35,6 +35,7 @@ class ControllerSouthServerHandler:
     def start_server(self):
         self.__server.serve_forever()
         return True
+
 
 class ControllerSouthAPI:
 

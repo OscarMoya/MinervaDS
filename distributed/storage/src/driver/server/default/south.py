@@ -8,12 +8,12 @@ class ServerSouthDriver(ControllerSouthBase):
         self.__pipe = pipe
 
     def ping(self):
-        self.alert_pipe(self.ping)
+        self.__alert_pipe(self.ping)
         return "PONG"
 
     def syn_request(self):
         result = self.__packet_manager.send_sync()
-        self.alert_pipe(self.syn_request)
+        self.__alert_pipe(self.syn_request)
         return result
 
     def set_packet_manager(self, manager):

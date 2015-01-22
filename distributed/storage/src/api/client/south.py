@@ -13,6 +13,7 @@ class ClientSouthServer(ControllerSouthBase):
     def syn_request(self):
         return self.__driver.send_sync()
 
+
 class ClientSouthServerHandler:
 
     def __init__(self, driver):
@@ -28,7 +29,8 @@ class ClientSouthServerHandler:
         self.__server.serve_forever()
         return True
 
-class ClientSouthAPI(ControllerSouthBase):
+
+class ClientSouthAPI:
 
     def __init__(self, driver):
         self.__handler = ClientSouthServerHandler(driver)

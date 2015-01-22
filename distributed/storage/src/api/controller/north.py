@@ -5,7 +5,6 @@ class ControllerNorthServer(ControllerSouthBase):
 
     def __init__(self):
         self.__server = None
-        pass
 
     def ping(self):
         result = self.__server.ping()
