@@ -45,7 +45,7 @@ class ClientWestAPI:
     def __init__(self, driver):
         self.__handler = ClientWestServerHandler(driver)
 
-    def start_api(self, ip, port):
+    def start(self, ip, port):
         self.__handler.set_up_client(ip, port)
         ThreadManager.start_method_in_new_thread(self.__handler.start_client, [])
         return True

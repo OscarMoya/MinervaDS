@@ -22,7 +22,7 @@ class ControllerNorthServer(ControllerSouthBase):
         result = self.__server.syn_request()
         return self.__process_result(result)
 
-    def initialize(self, ip, port):
+    def start(self, ip, port):
         self.__server = xmlrpclib.ServerProxy(ip, port)
         return True
 

@@ -53,9 +53,9 @@ class ClientManager:
         self.__configure_north_backend()
 
     def start(self, mgmt_ip, mgmt_port, data_ip, data_port):
-        self.__south_backend.start_api(mgmt_ip, mgmt_port)
-        self.__west_backend.start_api(data_ip, data_port)
-        self.__north_backend.initialize()
+        self.__south_backend.start(mgmt_ip, mgmt_port)
+        self.__west_backend.start(data_ip, data_port)
+        self.__north_backend.start()
         self.__db.load_all()
         self.__north_backend.join(self.__id, self.__type, mgmt_ip, data_ip)
 
@@ -194,12 +194,12 @@ class ClientManager:
         pass
 
     def __process_write(self, **kwargs):
-
+        servers = kwargs.get("servers")
         file_id = kwargs.get("file_id")
         chunk_id = kwargs.get("chunk").get("id")
 
         self.__requests[file_id][chunk_id] = True
-        self.__receive(file_id)
+        self.__receive(servers, file_id)
 
     def __get_file_size(self, file_size):
         return os.stat(file_size).st_size

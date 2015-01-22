@@ -11,15 +11,31 @@ class ControllerManager:
     def __init__(self):
         self.__south_backend = None
         self.__north_backend = None
-        self.__configure()
+        self.configure()
         self.active_endpoints = dict()
 
     def start(self):
+        #TODO: start() should take exactly 3 arguments
         self.__south_backend.start()
 
-    def __configure(self):
-        self.__south_backend = self.__get_south_backend()
+    def configure(self):
+        self.__configure_south_backend()
+        self.__configure_north_backend()
+
+    def __configure_north_backend(self):
+        #TODO: Fix it
         self.__north_backend = self.__get_north_backend()
+
+    def __configure_south_backend(self):
+        #TODO: Fix it
+        self.__south_backend = self.__get_south_backend()
+        """
+        pipe = self
+        db = DefaultEndPointDB()
+        driver = ControllerSouthDriver(db, pipe)
+        api = ServerNorthAPI(driver)
+        self.__south_backend = api
+        """
 
     def __get_north_backend(self):
         north_backend = ControllerNorthServer()
@@ -30,7 +46,7 @@ class ControllerManager:
         south_backend_driver = ControllerSouthDriver(pipe)
         south_backend_driver.set_file_db(DefaultFileDB())
         south_backend_driver.set_endpoint_db(DefaultEndPointDB())
-        south_backend_driver.start()    #Start DB
+        south_backend_driver.start()        #Start DB
 
         south_backend = ControllerSouthAPI(south_backend_driver)
         return south_backend

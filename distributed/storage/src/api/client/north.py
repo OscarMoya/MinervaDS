@@ -22,7 +22,7 @@ class ClientNorthAPI(EndPointNorthBase):
         result = self.__controller_north_channel.write_request(client_id, file_size, user_requirements)
         return self.__process_result(result)
 
-    def initialize(self, ip, port):
+    def start(self, ip, port):
         self.__controller_north_channel = xmlrpclib.ServerProxy(ip, port)
 
     def __process_result(self, result):

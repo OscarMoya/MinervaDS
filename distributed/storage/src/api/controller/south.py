@@ -42,7 +42,7 @@ class ControllerSouthAPI:
     def __init__(self, driver):
         self.__handler = ControllerSouthServerHandler(driver)
 
-    def start_api(self, ip, port):
+    def start(self, ip, port):
         self.__handler.set_up_server(ip, port)
         ThreadManager.start_method_in_new_thread(self.__handler.start_server, [])
         return True
