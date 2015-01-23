@@ -62,6 +62,7 @@ class ServerManager:
         self.__north_backend = api
 
     def start(self, mgmt_ip, mgmt_port, data_ip, data_port):
+        #TODO: Doesn't work, start() takes exactly 2 arguments (3 given)
         self.__south_backend.start(mgmt_ip, mgmt_port)
         self.__west_backend.start(data_ip, data_port)
         self.__db.load_all()
@@ -97,5 +98,3 @@ class ServerManager:
 
     def get_east_backend(self):
         return self.__east_backend
-    
-

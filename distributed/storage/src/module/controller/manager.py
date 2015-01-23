@@ -14,42 +14,42 @@ class ControllerManager:
         self.configure()
         self.active_endpoints = dict()
 
-    def start(self):
+    def start(self, mgmt_ip, mgmt_port):
         #TODO: start() should take exactly 3 arguments
-        self.__south_backend.start()
+        self.__south_backend.start(mgmt_ip, mgmt_port)
 
     def configure(self):
         self.__configure_south_backend()
         self.__configure_north_backend()
 
     def __configure_north_backend(self):
-        #TODO: Fix it
         self.__north_backend = self.__get_north_backend()
 
     def __configure_south_backend(self):
-        #TODO: Fix it
         self.__south_backend = self.__get_south_backend()
-        """
-        pipe = self
-        db = DefaultEndPointDB()
-        driver = ControllerSouthDriver(db, pipe)
-        api = ServerNorthAPI(driver)
-        self.__south_backend = api
-        """
 
     def __get_north_backend(self):
+        #TODO: Fix it
         north_backend = ControllerNorthServer()
+
         return north_backend
 
     def __get_south_backend(self):
+        #TODO: Fix it
+        """
         pipe = self
         south_backend_driver = ControllerSouthDriver(pipe)
         south_backend_driver.set_file_db(DefaultFileDB())
         south_backend_driver.set_endpoint_db(DefaultEndPointDB())
         south_backend_driver.start()        #Start DB
+        """
 
-        south_backend = ControllerSouthAPI(south_backend_driver)
-        return south_backend
+        pipe = self
+        db = DefaultEndPointDB()
+        south_backend_driver = ControllerSouthDriver(db, pipe)
+        api = ControllerSouthAPI(south_backend_driver)
+        self.__south_backend = api
+        return self.__south_backend
 
     def alert(self, func, **kwargs):
         if func.__name__ == "join":
