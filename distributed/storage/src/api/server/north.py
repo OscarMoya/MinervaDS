@@ -7,7 +7,7 @@ class ServerNorthAPI(EndPointNorthBase):
         self.__controller_north_channel = channel
 
     def join(self, endpoint_id, type, mgmt_ip, data_ip):
-        result = self.__controller_north_channel.join(endpoint_id, mgmt_ip, data_ip)
+        result = self.__controller_north_channel.join(endpoint_id,type, mgmt_ip, data_ip)
         return self.__process_result(result)
 
     def leave(self, endpoint_id):

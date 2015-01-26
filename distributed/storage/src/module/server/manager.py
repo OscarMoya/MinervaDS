@@ -12,11 +12,13 @@ from distributed.storage.src.driver.db.endpoint.default import DefaultEndPointDB
 
 import uuid
 
+
 class ServerManager:
 
     def __init__(self, db=None, id=None):
         if not id:
             id = uuid.uuid4()
+
 
         self.__nf_manager = None
 
@@ -46,26 +48,25 @@ class ServerManager:
         api = ServerWestAPI(driver)
         self.__west_backend = api
 
+    def __configure_north_backend(self):
+        api = ServerNorthAPI()
+        self.__north_backend = api
 
     def __configure_south_backend(self):
         pipe = self
         db = DefaultEndPointDB()
-        driver = ControllerSouthDriver(db, pipe)
-        api = ServerNorthAPI(driver)
-        self.__south_backend = api
-
-    def __configure_north_backend(self):
-        pipe = self
-        db = DefaultEndPointDB()
         driver = ServerSouthDriver(db, pipe)
         api = ServerSouthAPI(driver)
-        self.__north_backend = api
+
+        self.__south_backend = api
 
     def start(self, mgmt_ip, mgmt_port, data_ip, data_port):
         self.__south_backend.start(mgmt_ip, mgmt_port)
         self.__west_backend.start(data_ip, data_port)
-        self.__db.load_all()
+        self.__north_backend.start(DSConfig.CONTROLLER_URL)
         self.__north_backend.join(self.__id, self.__type, mgmt_ip, data_ip)
+        if self.__db:
+            self.__db.load_all()
 
     def alert(self, func, **kwargs):
         pass

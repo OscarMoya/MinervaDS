@@ -1,6 +1,7 @@
 from distributed.storage.src.driver.client.default.south import ClientSouthDriver
 from distributed.storage.src.driver.client.default.west import ClientWestDriver
 from distributed.storage.src.driver.db.endpoint.default import DefaultEndPointDB
+from distributed.storage.src.driver.db.file.default import DefaultFileDB
 
 from distributed.storage.src.api.client.south import ClientSouthAPI
 from distributed.storage.src.api.client.west import ClientWestAPI
@@ -92,8 +93,9 @@ class ClientManager:
 
     def __configure_west_backend(self):
         pipe = self
-        db = DefaultEndPointDB()
-        driver = ClientWestDriver(db, pipe)
+        endpoint_db = DefaultEndPointDB()
+        file_db = DefaultFileDB()
+        driver = ClientWestDriver(pipe=pipe, endpoint_db=endpoint_db, file_db=file_db)
         api = ClientWestAPI(driver)
         self.__west_backend = api
 
