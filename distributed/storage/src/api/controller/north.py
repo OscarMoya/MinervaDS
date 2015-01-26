@@ -5,7 +5,6 @@ class ControllerNorthServer(ControllerSouthBase):
 
     def __init__(self):
         self.__server = None
-        pass
 
     def ping(self):
         result = self.__server.ping()
@@ -23,7 +22,7 @@ class ControllerNorthServer(ControllerSouthBase):
         result = self.__server.syn_request()
         return self.__process_result(result)
 
-    def initialize(self, ip, port):
+    def start(self, ip, port):
         self.__server = xmlrpclib.ServerProxy(ip, port)
         return True
 

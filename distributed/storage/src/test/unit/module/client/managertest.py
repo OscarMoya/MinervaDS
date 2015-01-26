@@ -1,17 +1,5 @@
-from distributed.storage.src.driver.client.default.south import ClientSouthDriver
-from distributed.storage.src.driver.client.default.west import ClientWestDriver
-from distributed.storage.src.driver.db.endpoint.default import DefaultEndPointDB
-
-from distributed.storage.src.api.client.south import ClientSouthAPI
-from distributed.storage.src.api.client.west import ClientWestAPI
-
-from distributed.storage.src.config.config import DSConfig
-
-from distributed.storage.src.util.packetmanager import PacketManager
-
-from distributed.storage.src.channel.engine import ChannelEngine
-
-from distributed.storage.src.driver.controller.default.south import ControllerSouthDriver
+from distributed.storage.src.module.client.manager import ClientManager
+from distributed.storage.src.module.nf.manager import NF_Manager
 from distributed.storage.src.test.mock.db.mockeddb import MockedDB
 
 import unittest
@@ -22,21 +10,37 @@ import xmlrpclib
 
 class ClientManagerTest(unittest.TestCase):
     def setUp(self):
-        pass
+        self.manager = ClientManager(db=MockedDB(), id="Client")
+        self.manager.__nf_manager = NF_Manager()
+
+        self.file_chunks = [{"type": "A", "value": "AAAAAA"},
+                           {"type": "B", "value": "BBBBBB"},
+                           {"type": "AxB", "value": "CCCCCC"}]
+
+        self.expected_keys = ["A", "B", "AxB"]
+        self.expected_values = ["AAAAAA", "BBBBBB", "CCCCCC"]
+        self.expected_file = "AAAAAABBBBBBCCCCCC"
+
+        self.expected_result = None
+        self.expected_keys.sort()
+        self.expected_values.sort()
 
     def test_configure(self):
-        pass
+        result = self.manager.configure()
+        self.assertTrue(result)
 
     def test_start(self):
+        result = self.manager.start("paramA", "paramB", "paramC", "paramD")
+        self.assertTrue(result)
+
+    def test_upload_file(self):
+        result = self.manager.upload_file(self.expected_file)
         pass
 
-    def test_upload_file(self, file, requirements):
+    def test_download_file(self):
         pass
 
-    def test_download_file(self, file_id):
-        pass
-
-    def test_configure_south_backend(self, data_ip, data_port):
+    def test_configure_south_backend(self):
         pass
 
     def test_configure_west_backend(self):
@@ -45,39 +49,56 @@ class ClientManagerTest(unittest.TestCase):
     def test_configure_north_backend(self):
         pass
 
-    def test_send(self, servers, file):
+    def test_send(self):
         pass
 
-    def test_receive(self, file_id):
+    def test_receive(self):
         pass
 
-    def test_construct_file(self, file_chunks):
+    """
+    def test_construct_file(self):
+        result = self.manager.__construct_file(self.file_chunks)
+        self.assertTrue(result)
+        self.assertEquals(result, self.expected_file)
+    """
+    """
+    def test_split_file(self):
+        result = self.manager.__split_file(self.expected_file)
+        self.assertTrue(result)
+        self.assertEquals(result, self.file_chunks)
+    """
+
+    def test_mount_channel(self):
         pass
 
-    def test_split_file(self, file):
+    def test_alert(self):
         pass
 
-    def test_mount_channel(self, url, channel_type):
-        pass
-
-    def test_alert(self, func, **kwargs):
-        pass
-
-    def test_process_ping(self, **kwargs):
+    def test_process_ping(self):
         #TODO
         pass
 
-    def test_process_syn_request(self, **kwargs):
+    def test_process_syn_request(self):
         #TODO
         pass
 
-    def test_process_read(self, **kwargs):
+    def test_process_read(self):
         #TODO
         pass
 
-    def test_process_write(self, **kwargs):
+    def test_process_write(self):
         pass
 
+    """
+    def test_get_file_size(self):
+        result = self.manager.__get_file_size(self.expected_file)
+        return result
+        #self.assertTrue(result)
+        #self.assertEquals(result, self.expected_result)
+    """
 
 if __name__ == "__main__":
-    unittest.main()
+    #unittest.main()
+    test = ClientManagerTest()
+    result = test.test_get_file_size()
+    print result

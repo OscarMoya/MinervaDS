@@ -22,7 +22,7 @@ class ClientEastAPI(EndPointEastBase):
         result = self.__client_east_channel.write(file_data, file_id,)
         return self.__process_result(result)
 
-    def __initialize(self, ip, port):
+    def __start(self, ip, port):
         self.__client_east_channel = xmlrpclib.ServerProxy(ip, port)
 
     def __process_result(self, result):

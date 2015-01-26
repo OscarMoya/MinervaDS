@@ -11,30 +11,45 @@ class ControllerManager:
     def __init__(self):
         self.__south_backend = None
         self.__north_backend = None
-        self.__configure()
-        self.active_endpoints = list()
+        self.configure()
+        self.active_endpoints = dict()
 
-    def start(self):
-        self.__south_backend.start()
+    def start(self, mgmt_ip, mgmt_port):
+        #TODO: start() should take exactly 3 arguments
+        self.__south_backend.start(mgmt_ip, mgmt_port)
 
-    def __configure(self):
-        self.__south_backend(self.__get_south_backend())
-        self.__north_backend(self.__get_north_backend())
+    def configure(self):
+        self.__configure_south_backend()
+        self.__configure_north_backend()
+
+    def __configure_north_backend(self):
+        self.__north_backend = self.__get_north_backend()
+
+    def __configure_south_backend(self):
+        self.__south_backend = self.__get_south_backend()
 
     def __get_north_backend(self):
+        #TODO: Fix it
         north_backend = ControllerNorthServer()
+
         return north_backend
 
     def __get_south_backend(self):
+        #TODO: Fix it
+        """
         pipe = self
         south_backend_driver = ControllerSouthDriver(pipe)
         south_backend_driver.set_file_db(DefaultFileDB())
         south_backend_driver.set_endpoint_db(DefaultEndPointDB())
-        south_backend_driver.start() #Start DB
+        south_backend_driver.start()        #Start DB
+        """
 
-        south_backend = ControllerSouthAPI(south_backend_driver)
-
-        return south_backend
+        pipe = self
+        db = DefaultEndPointDB()
+        south_backend_driver = ControllerSouthDriver(db, pipe)
+        api = ControllerSouthAPI(south_backend_driver)
+        self.__south_backend = api
+        return self.__south_backend
 
     def alert(self, func, **kwargs):
         if func.__name__ == "join":
@@ -55,7 +70,7 @@ class ControllerManager:
         endpoint.send_sync()
 
     def __process_leave_event(self, **kwargs):
-        self.__remove_endpoint(self, kwargs.get("id"))
+        self.__remove_endpoint(kwargs.get("id"))
 
     def __process_read_request_event(self, **kwargs):
         #TODO probably just log the call
@@ -66,15 +81,14 @@ class ControllerManager:
         pass
 
     def __add_endpoint(self, **kwargs):
-        self.__active_endpoints[kwargs.get("id")] = {"type":kwargs.get("type"),
-                                                     "url":kwargs.get("url"),
+        self.active_endpoints[kwargs.get("id")] = {"type": kwargs.get("type"),
+                                                     "url": kwargs.get("url"),
                                                      "data_ip": kwargs.get("data_ip")}
 
     def __remove_endpoint(self, id):
         self.active_endpoints.pop(id)
 
-    def __mount_end_point(self, id):
-        endpoint = self.__active_endpoints.get(id)
-        mounted_endpoint = xmlrpclib.ServerProxy(endpoint.get("url"))
+    def __mount_endpoint(self, id):
+        endpoint = self.active_endpoints.get(id)
+        mounted_endpoint = xmlrpclib.ServerProxy("http://"+endpoint.get("url"))
         return mounted_endpoint
-
