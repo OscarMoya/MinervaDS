@@ -7,7 +7,7 @@ import uuid
 
 class ControllerSouthDriver(EndPointNorthBase):
 
-    def __init__(self, pipe=None , endpoint_db=None, file_db=None):
+    def __init__(self, pipe=None, endpoint_db=None, file_db=None):
         self.__endpoint_db = endpoint_db
         self.__file_db = file_db
         self.__pipe = pipe

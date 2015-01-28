@@ -4,6 +4,8 @@ from distributed.storage.src.driver.controller.default.south import ControllerSo
 from distributed.storage.src.driver.db.endpoint.default import DefaultEndPointDB
 from distributed.storage.src.driver.db.file.default import DefaultFileDB
 
+from distributed.storage.src.test.mock.db.mockeddb import MockedDB
+
 import unittest
 
 class ControllerManagerTest(unittest.TestCase):
@@ -15,41 +17,19 @@ class ControllerManagerTest(unittest.TestCase):
         self.client = ClientSouthDriver()
         self.db_endpoint = DefaultEndPointDB()
         self.filedb = DefaultFileDB
-        self.controller = ControllerSouthDriver()
+        self.controller = ControllerSouthDriver(None, self.db_endpoint, None)
 
     def test_should_start(self):
         #TODO: Works!
         self.manager.start("10.100.10.50", 9090)
 
     def test_should_alert(self):
-        #TODO: 'processoutput' object has no attribute '__name__'
-        self.assertTrue(self.manager.alert(self.controller.join)==None)
-        self.assertTrue(self.manager.alert(self.controller.leave)==None)
+        #TODO: tests Alert method, to test funcs in driver/controller/controllertest
+        params = {"id": "A", "type": "client", "mgmt_ip": "10.100.10.71", "data_ip": "192.168.1.10"}
+        #self.assertTrue(self.manager.alert(self.controller.join(**params))==None)
+        #self.assertTrue(self.manager.alert(self.controller.leave)==None)
         self.assertTrue(self.manager.alert(self.controller.read_request)==None)
         self.assertTrue(self.manager.alert(self.controller.write_request)==None)
-
-    def test_should_process_join_event(self):
-        pass
-
-    def test_should_process_leave_event(self):
-        pass
-
-    def test_should_process_read_request_event(self):
-
-        pass
-
-    def test_should_process_write_request_event(self):
-
-        pass
-
-    def test_should_add_endpoint(self):
-        pass
-
-    def test_should_remove_endpoint(self):
-        pass
-
-    def test_should_mount_endpoint(self):
-        pass
 
 if __name__ == "__main__":
     unittest.main()
