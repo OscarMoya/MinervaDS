@@ -15,7 +15,7 @@ class ControllerManager:
         self.active_endpoints = dict()
 
     def start(self, mgmt_ip, mgmt_port):
-        #TODO: start() should take exactly 3 arguments
+        #
         self.__south_backend.start(mgmt_ip, mgmt_port)
 
     def configure(self):
@@ -35,14 +35,7 @@ class ControllerManager:
         return north_backend
 
     def __get_south_backend(self):
-        #TODO: Fix it
-        """
-        pipe = self
-        south_backend_driver = ControllerSouthDriver(pipe)
-        south_backend_driver.set_file_db(DefaultFileDB())
-        south_backend_driver.set_endpoint_db(DefaultEndPointDB())
-        south_backend_driver.start()        #Start DB
-        """
+        #
 
         pipe = self
         db = DefaultEndPointDB()

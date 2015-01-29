@@ -10,8 +10,8 @@ import signal
 class ControllerCommunicationTest(unittest.TestCase):
 
     def setUp(self):
-        self.mgmt_ip = "10.10.254.2"
-        self.data_ip = "10.10.253.2"
+        self.mgmt_ip = "10.10.254.1"
+        self.data_ip = "10.10.253.1"
         self.mgmt_port = 9696
         self.data_port = 9595
 

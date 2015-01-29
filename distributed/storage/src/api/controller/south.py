@@ -29,7 +29,9 @@ class ControllerSouthServerHandler:
 
     def set_up_server(self, ip, port):
         self.__server = SimpleXMLRPCServer((ip, port))
+        #print "dir", dir(self.__server)
         self.__server.register_instance(ControllerSouthServer(self.__driver))
+        #print "server__dict__", self.__server.__dict__
         return True
 
     def start_server(self):

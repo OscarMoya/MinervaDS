@@ -3,6 +3,7 @@ from distributed.storage.src.driver.client.default.west import ClientWestDriver
 from distributed.storage.src.driver.db.endpoint.default import DefaultEndPointDB
 from distributed.storage.src.driver.db.file.default import DefaultFileDB
 
+from distributed.storage.src.api.client.north import ClientNorthAPI
 from distributed.storage.src.api.client.south import ClientSouthAPI
 from distributed.storage.src.api.client.west import ClientWestAPI
 
@@ -56,8 +57,8 @@ class ClientManager:
     def start(self, mgmt_ip, mgmt_port, data_ip, data_port):
         self.__south_backend.start(mgmt_ip, mgmt_port)
         self.__west_backend.start(data_ip, data_port)
-        self.__north_backend.start()
-        self.__db.load_all()
+        self.__north_backend.start("http://"+DSConfig.CONTROLLER_URL)
+        self.__db.load()
         self.__north_backend.join(self.__id, self.__type, mgmt_ip, data_ip)
 
     def upload_file(self, file, requirements):
@@ -89,14 +90,18 @@ class ClientManager:
         pipe = self
         endpoint_db = DefaultEndPointDB()
         file_db = DefaultFileDB()
-        driver = ClientWestDriver(pipe=pipe, endpoint_db=endpoint_db, file_db=file_db)
+        driver = ClientWestDriver(db=file_db, pipe=pipe)
         api = ClientWestAPI(driver)
         self.__west_backend = api
 
     def __configure_north_backend(self):
+        api = ClientNorthAPI()
+        self.__north_backend = api
+        """
         controller_url = "http://"+DSConfig.CONTROLLER_URL
         controller_iface = xmlrpclib.ServerProxy(controller_url)
         self.__north_backend = controller_iface
+        """
 
     def __load_chunks(self, servers, file_id):
 
@@ -214,3 +219,15 @@ class ClientManager:
         file_size.seek(old_file_position, os.SEEK_SET)
         return size
     """
+
+    def get_north_backend(self):
+        return self.__north_backend
+
+    def get_south_backend(self):
+        return self.__south_backend
+
+    def get_west_backend(self):
+        return self.__west_backend
+
+    def get_east_backend(self):
+        return self.__east_backend
