@@ -39,6 +39,55 @@ class mcolors:
         self.FAIL = ''
         self.ENDC = ''
 
+
+config_magic_ip = DSConfig.MAGIC_IP
+
+
+if pckt_in_dst_ip != config_magic_ip:
+      log.warning("Couldn't find magic_ip in packet-in event packet")
+      pass
+
+if pckt_in_dst_ip not in host_list:
+      log.info('Received packet-in event packet from unknown host')
+      pass
+
+class ResilientModule(object):
+
+    def __init__(self, reactive, ignore=None):
+        """
+        Initialize
+
+        See LearningSwitch for meaning of 'transparent'
+        'reactive' indicates how
+        'ignore' is an optional list/set of DPIDs to ignore
+        """
+        log.info("Initializing Resilient Path Finder")
+        core.openflow.addListeners(self)
+        self.reactive = reactive
+        self.ignore = set(ignore) if ignore else ()
+
+        self.topology = list()
+        self.priority = 65000 #16777215 # Highest priority
+
+        if self.reactive:
+            try:
+                core.openflow.addListenerByName("PacketIn", self._handle_PacketIn)
+            except Exception as e:
+                log.info(e)
+        else:
+            core.openflow.addListenerByName("ConnectionUp", self._handle_ConnectionUp)
+        log.info("Network Coding Correctly Initialized")
+
+
+
+
+
+
+
+
+
+
+
 #TODO: To implement, topology?
 def main(topology, src, dst, n_flows):
     """
