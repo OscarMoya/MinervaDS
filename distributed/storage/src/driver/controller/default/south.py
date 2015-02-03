@@ -24,10 +24,9 @@ class ControllerSouthDriver(EndPointNorthBase):
         return "Pong"
 
     @processoutput
-    def join(self, id, type, mgmt_ip, data_ip):
-        url = "http://%s:%d" % (mgmt_ip, DSConfig.DEFAULT_MGMT_PORT)
-        result = self.__endpoint_db.save(id=id, type=type, url=mgmt_ip, data_ip=data_ip)
-        self.__alert_pipe("join", id=id, type=type, url=url, data_ip=data_ip)
+    def join(self, id, type, mgmt_url, data_url):
+        result = self.__endpoint_db.save(id=id, type=type, mgmt_url=mgmt_url, data_url=data_url)
+        self.__alert_pipe("join", id=id, type=type, mgmt_url=mgmt_url, data_url=data_url)
         return result
 
     @processoutput
@@ -49,23 +48,32 @@ class ControllerSouthDriver(EndPointNorthBase):
         return result
 
     def write_request(self, client_id, file_size, user_requirements):
+
         servers = self.__endpoint_db.filter(type=self.SERVER_TYPE)
-        file_id = uuid.uuid4()
+        file_id = str(uuid.uuid4())
         #TODO: do the magic getting the most suitable servers :)
 
+        #TODO: Solving things in ugly way when not enough servers
+        if len(servers) < 3:
+            servers = [servers[0],servers[0],servers[0]]
         server_a = servers[0]
         server_b = servers[1]
         server_c = servers[2]
 
+        print servers[0]
+
         #XXX This should not be stored here
-        self.__file_db.save(client_id=client_id, server_id=server_a.get("id"), file_id=file_id, chunk_type=self.CHUNK_A_TYPE)
-        self.__file_db.save(client_id=client_id, server_id=server_b.get("id"), file_id=file_id, chunk_type=self.CHUNK_B_TYPE)
-        self.__file_db.save(client_id=client_id, server_id=server_c.get("id"), file_id=file_id, chunk_type=self.CHUNK_AXB_TYPE)
+        self.__file_db.save(client_id=client_id, id=server_a.keys()[0], file_id=file_id, chunk_type=self.CHUNK_A_TYPE)
+        self.__file_db.save(client_id=client_id, id=server_b.keys()[0], file_id=file_id, chunk_type=self.CHUNK_B_TYPE)
+        self.__file_db.save(client_id=client_id, id=server_c.keys()[0], file_id=file_id, chunk_type=self.CHUNK_AXB_TYPE)
+
+        channel = self.__get_channel(user_requirements)
 
         result = {"file_id": file_id,
-                  self.CHUNK_A_TYPE: server_a.get("server_url"),
-                  self.CHUNK_B_TYPE: server_b.get("server_url"),
-                  self.CHUNK_AXB_TYPE: server_c.get("server_url"), }
+                  "channel": channel,
+                  self.CHUNK_A_TYPE: server_a.get(server_a.keys()[0]).get("data_url"),
+                  self.CHUNK_B_TYPE: server_b.get(server_b.keys()[0]).get("data_url"),
+                  self.CHUNK_AXB_TYPE: server_c.get(server_c.keys()[0]).get("data_url"),}
 
         self.__alert_pipe("write_request", client_id=client_id, file_id=file_id)
         return result
@@ -89,3 +97,6 @@ class ControllerSouthDriver(EndPointNorthBase):
     def __alert_pipe(self, func, **kwargs):
         if self.__pipe:
             return self.__pipe.alert(func, **kwargs)
+
+    def __get_channel(self, requirements):
+        return "dummy"#TODO implement

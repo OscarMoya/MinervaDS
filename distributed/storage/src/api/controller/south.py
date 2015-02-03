@@ -18,7 +18,7 @@ class ControllerSouthServer(EndPointNorthBase):
         return self.__driver.read_request(client_id, file_id)
 
     def write_request(self, client_id, file_size, user_requirements):
-        return self.__driver.write_request(file_size, user_requirements)
+        return self.__driver.write_request(client_id, file_size, user_requirements)
 
     def ping(self):
         return self.__driver.ping()

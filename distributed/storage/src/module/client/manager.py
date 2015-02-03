@@ -13,7 +13,7 @@ from distributed.storage.src.util.packetmanager import PacketManager
 
 from distributed.storage.src.channel.engine import ChannelEngine
 
-from distributed.storage.src.module.nf.manager import NF_Manager
+from distributed.storage.src.module.nf.manager import NFManager
 
 import os
 import time
@@ -30,7 +30,7 @@ class ClientManager:
         if not db:
             db = DefaultEndPointDB()
 
-        self.__nf_manager = None
+        self.__nf_manager = NFManager()
 
         self.CHUNK_A_TYPE = "A"
         self.CHUNK_B_TYPE = "B"
@@ -63,7 +63,11 @@ class ClientManager:
         self.__west_backend.start(data_ip, data_port)
         self.__start_north_backend()
         self.__db.load()
-        result = ThreadManager.start_method_in_new_thread(self.__north_backend.join, [self.__id, self.__type, mgmt_ip, data_ip])
+
+        data_url = "http://"+ data_ip + ":" + str(data_port)
+        mgmt_url = "http://"+ mgmt_ip + ":" + str(mgmt_port)
+
+        result = ThreadManager.start_method_in_new_thread(self.__north_backend.join, [self.__id, self.__type, mgmt_url, data_url])
 
     def upload_file(self, file, requirements):
         file_size = "Default"
@@ -129,10 +133,11 @@ class ClientManager:
         server_a = servers.get(self.CHUNK_A_TYPE)
         server_b = servers.get(self.CHUNK_B_TYPE)
         server_axb = servers.get(self.CHUNK_AXB_TYPE)
+        print "Server A", server_a
 
-        channel_a = self.__mount_channel(server_a.get("url"), server_a.get("channel"))
-        channel_b = self.__mount_channel(server_b.get("url"), server_b.get("channel"))
-        channel_c = self.__mount_channel(server_axb.get("url"), server_axb.get("channel"))
+        channel_a = self.__mount_channel(server_a, servers.get("channel"))
+        channel_b = self.__mount_channel(server_b, servers.get("channel"))
+        channel_c = self.__mount_channel(server_axb, servers.get("channel"))
 
         chunk_list = self.__split_file(file)
 
@@ -141,9 +146,9 @@ class ClientManager:
         chunk_c = chunk_list.pop(0)
         del chunk_list
 
-        result_a = channel_a.write(chunk_a)
-        result_b = channel_b.write(chunk_b)
-        result_c = channel_c.write(chunk_c)
+        result_a = channel_a.write(chunk_a, servers.get("file_id"),self.CHUNK_A_TYPE )
+        result_b = channel_b.write(chunk_b, servers.get("file_id"),self.CHUNK_B_TYPE )
+        result_c = channel_c.write(chunk_c, servers.get("file_id"),self.CHUNK_AXB_TYPE )
 
         return True
 

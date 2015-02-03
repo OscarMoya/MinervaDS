@@ -1,6 +1,6 @@
 import binascii
 
-class NF_Manager:
+class NFManager:
 
     def __init__(self):
 

@@ -20,7 +20,7 @@ class ClientWestServer(EndPointEastBase):
         return self.__driver.read_data()
 
     def write(self, file_data, file_id, chunk_type):
-        return self.__driver.write_data()
+        return self.__driver.write(file_data, file_id, chunk_type)
 
 
 class ClientWestServerHandler:

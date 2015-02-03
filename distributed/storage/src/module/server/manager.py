@@ -4,12 +4,12 @@ from distributed.storage.src.config.config import DSConfig
 from distributed.storage.src.api.server.west import ServerWestAPI
 from distributed.storage.src.api.server.north import ServerNorthAPI
 from distributed.storage.src.api.server.south import ServerSouthAPI
+from distributed.storage.src.driver.db.file.default import DefaultFileDB
 
 from distributed.storage.src.driver.server.default.west import ServerWestDriver
 from distributed.storage.src.driver.server.default.south import ServerSouthDriver
 from distributed.storage.src.driver.controller.default.south import ControllerSouthDriver
 
-from distributed.storage.src.driver.db.endpoint.default import DefaultEndPointDB
 
 import uuid
 from distributed.storage.src.util.packetmanager import PacketManager
@@ -45,7 +45,7 @@ class ServerManager:
 
     def __configure_west_backend(self):
         pipe = self
-        db = DefaultEndPointDB()
+        db = DefaultFileDB()
         driver = ServerWestDriver(db=db, pipe=pipe)
         api = ServerWestAPI(driver)
         self.__west_backend = api
@@ -68,7 +68,11 @@ class ServerManager:
         self.__south_backend.start(mgmt_ip, mgmt_port)
         self.__west_backend.start(data_ip, data_port)
         self.__start_north_backend()
-        result = ThreadManager.start_method_in_new_thread(self.__north_backend.join, [self.__id, self.__type, mgmt_ip, data_ip])
+
+        data_url = "http://"+ data_ip + ":" + str(data_port)
+        mgmt_url = "http://"+ mgmt_ip + ":" + str(mgmt_port)
+
+        result = ThreadManager.start_method_in_new_thread(self.__north_backend.join, [self.__id, self.__type, mgmt_url, data_url])
         if self.__db:
             self.__db.load_all()
         return result
@@ -110,3 +114,6 @@ class ServerManager:
 
     def get_east_backend(self):
         return self.__east_backend
+
+    def get_db(self):
+        return self.__db

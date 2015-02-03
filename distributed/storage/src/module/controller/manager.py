@@ -51,7 +51,7 @@ class ControllerManager:
 
     def __process_join_event(self, **kwargs):
         self.__add_endpoint(**kwargs)
-        endpoint = self.__mount_endpoint(id = kwargs.get("id"))
+        endpoint = self.__mount_endpoint(kwargs.get("id"), "mgmt")
         ThreadManager.start_method_in_new_thread(endpoint.syn_request, [], name=kwargs.get("id"))
 
     def __process_leave_event(self, **kwargs):
@@ -67,15 +67,16 @@ class ControllerManager:
 
     def __add_endpoint(self, **kwargs):
         self.active_endpoints[kwargs.get("id")] = {"type": kwargs.get("type"),
-                                                     "url": kwargs.get("url"),
-                                                     "data_ip": kwargs.get("data_ip")}
+                                                     "data_url": kwargs.get("data_url"),
+                                                     "mgmt_url": kwargs.get("mgmt_url")}
 
     def __remove_endpoint(self, id):
         self.active_endpoints.pop(id)
 
-    def __mount_endpoint(self, id):
+    def __mount_endpoint(self, id, type):
+
         endpoint = self.active_endpoints.get(id)
-        mounted_endpoint = xmlrpclib.ServerProxy(endpoint.get("url"))
+        mounted_endpoint = xmlrpclib.ServerProxy(endpoint.get("%s_url" % type))
         return mounted_endpoint
 
     def get_south_backend(self):
