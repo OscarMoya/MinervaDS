@@ -15,7 +15,10 @@ class DummyChannel(EndPointEastBase):
         return self.__medium.read(file_id)
 
     def write(self, file_data, file_id, chunk_type):
-        return self.__medium.write(file_data, file_id)
+        return self.__medium.write(file_data, file_id, chunk_type)
+
+    def syn(self):
+        pass
 
     def get_url(self):
         return self.__url

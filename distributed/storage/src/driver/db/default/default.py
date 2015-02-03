@@ -10,11 +10,12 @@ class DefaultDB(DBBase):
 
     def __init__(self):
         self.DB_NAME = None
+        self.PRIMARY_KEY = "id"
 
     def save(self, **kwargs):
         #first, get the most updated data, just in case
         data = self.load()
-        id = kwargs.pop("id")
+        id = kwargs.pop(self.PRIMARY_KEY)
         data[id] = kwargs
         self.__write(data)
 
@@ -36,16 +37,14 @@ class DefaultDB(DBBase):
             id_match = None
 
             matched = False
-
-            if kwargs.has_key("id"):
+            if kwargs.has_key(self.PRIMARY_KEY):
                 id_match = False
-                if not id == kwargs.pop("id"):
+                if not id == kwargs.pop(self.PRIMARY_KEY):
                     continue
                 else:
                     id_match = True
-
-            for field, value in kwargs:
-                if not entry.get(field) == value:
+            for field in kwargs:
+                if not entry.get(field) == kwargs.get(field):
                     matched = False
                     break
                 matched = True
@@ -64,7 +63,7 @@ class DefaultDB(DBBase):
 
     def remove(self, **kwargs):
         data = self.load()
-        id = kwargs.get("id")
+        id = kwargs.get(self.PRIMARY_KEY)
         if not id:
             raise Exception("Missing ID")
         data.pop(id)

@@ -59,7 +59,7 @@ class ClientManagerWorkFlow(unittest.TestCase):
         print "DB is correct. Preparing to upload a file..."
         time.sleep(1)
 
-        """
+
         print "About to upload a file..."
         result = self.client_manager.upload_file(self.data, {})
         print "File uploaded, Checking result..."
@@ -68,6 +68,7 @@ class ClientManagerWorkFlow(unittest.TestCase):
         self.check_params_after_upload()
         print "Status OK. Preparing to download...\n\n\n"
 
+        """
         time.sleep(1)
 
         print "About to download a file..."
@@ -102,7 +103,9 @@ class ClientManagerWorkFlow(unittest.TestCase):
         self.assertTrue(result)
 
     def check_params_after_upload(self):
-        pass
+        db = self.server_manager.get_db()
+        print db.load()
+
 
     def check_params_after_download(self):
         pass
@@ -132,21 +135,21 @@ class ClientManagerWorkFlow(unittest.TestCase):
 
         self.check_generic_endpoint_structure(endpoint)
 
-        self.assertEquals("http://10.10.253.2:9797", endpoint.get("url"))
-        self.assertEquals("10.10.254.2", endpoint.get("data_ip"))
+        self.assertEquals("http://10.10.254.2:9696", endpoint.get("data_url"))
+        self.assertEquals("http://10.10.253.2:9797", endpoint.get("mgmt_url"))
         self.assertEquals("server", endpoint.get("type"))
 
     def check_client_endpoint_result(self, endpoint):
 
         self.check_generic_endpoint_structure(endpoint)
 
-        self.assertEquals("http://10.10.253.3:9797", endpoint.get("url"))
-        self.assertEquals("10.10.254.3", endpoint.get("data_ip"))
+        self.assertEquals("http://10.10.254.3:9696", endpoint.get("data_url"))
+        self.assertEquals("http://10.10.253.3:9797", endpoint.get("mgmt_url"))
         self.assertEquals("client", endpoint.get("type"))
 
     def check_generic_endpoint_structure(self, endpoint):
 
-        expected_keys = ["url", "data_ip", "type"]
+        expected_keys = ["data_url", "mgmt_url", "type"]
         expected_keys.sort()
 
         obtained_keys = endpoint.keys()
