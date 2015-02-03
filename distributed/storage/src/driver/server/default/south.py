@@ -13,7 +13,7 @@ class ServerSouthDriver(ControllerSouthBase):
 
     def syn_request(self):
         result = self.__packet_manager.send_sync()
-        self.__alert_pipe(self.syn_request)
+        self.__alert_pipe("syn_request")
         return result
 
     def set_packet_manager(self, manager):

@@ -9,7 +9,7 @@ class ClientWestDriver(EndPointEastBase):
         self.__buffer = dict()
 
     def ping(self):
-        self.__alert_pipe(self.ping)
+        self.__alert_pipe("ping")
         return "PONG"
 
     def syn(self):
@@ -17,12 +17,12 @@ class ClientWestDriver(EndPointEastBase):
 
     def read(self, client_id, file_id):
         result = self.__data_db.filter(file_id=file_id, client_id=client_id)
-        self.__alert_pipe(self.read, client_id=client_id, file_id=file_id)
+        self.__alert_pipe("read", client_id=client_id, file_id=file_id)
         return result
 
     def write(self, file_data, file_id, chunk_type):
         result = self.__data_db.save(file_data=file_data, file_id=file_id)
-        self.__alert_pipe(self.write, file_id=file_id, chunk_type=chunk_type)
+        self.__alert_pipe("write", file_id=file_id, chunk_type=chunk_type)
         return result
 
     def __alert_pipe(self, func, **kwargs):

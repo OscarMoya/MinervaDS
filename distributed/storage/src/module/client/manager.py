@@ -19,6 +19,7 @@ import os
 import time
 import uuid
 import xmlrpclib
+from distributed.storage.src.util.threadmanager import ThreadManager
 
 
 class ClientManager:
@@ -26,6 +27,8 @@ class ClientManager:
     def __init__(self, db=None, id=None):
         if not id:
             id = uuid.uuid4()
+        if not db:
+            db = DefaultEndPointDB()
 
         self.__nf_manager = None
 
@@ -52,20 +55,19 @@ class ClientManager:
     def configure(self):
         self.__configure_west_backend()
         self.__configure_south_backend()
-        self.__configure_north_backend()
+
 
     def start(self, mgmt_ip, mgmt_port, data_ip, data_port):
+
         self.__south_backend.start(mgmt_ip, mgmt_port)
         self.__west_backend.start(data_ip, data_port)
-        self.__north_backend.start("http://"+DSConfig.CONTROLLER_URL)
+        self.__start_north_backend()
         self.__db.load()
-        self.__north_backend.join(self.__id, self.__type, mgmt_ip, data_ip)
+        result = ThreadManager.start_method_in_new_thread(self.__north_backend.join, [self.__id, self.__type, mgmt_ip, data_ip])
 
     def upload_file(self, file, requirements):
-        file_size = self.__get_file_size(file)
-
+        file_size = "Default"
         servers = self.__north_backend.write_request(self.__id, file_size, requirements)
-
         result = self.__send(servers, file)
         return result
 
@@ -88,20 +90,16 @@ class ClientManager:
 
     def __configure_west_backend(self):
         pipe = self
-        endpoint_db = DefaultEndPointDB()
+        #endpoint_db = DefaultEndPointDB()
         file_db = DefaultFileDB()
         driver = ClientWestDriver(db=file_db, pipe=pipe)
         api = ClientWestAPI(driver)
         self.__west_backend = api
 
-    def __configure_north_backend(self):
-        api = ClientNorthAPI()
-        self.__north_backend = api
-        """
-        controller_url = "http://"+DSConfig.CONTROLLER_URL
+    def __start_north_backend(self):
+        controller_url = DSConfig.CONTROLLER_URL
         controller_iface = xmlrpclib.ServerProxy(controller_url)
         self.__north_backend = controller_iface
-        """
 
     def __load_chunks(self, servers, file_id):
 
@@ -176,13 +174,13 @@ class ClientManager:
         return channel
 
     def alert(self, func, **kwargs):
-        if func.__name__ == "ping":
+        if func == "ping":
             return self.__process_ping(**kwargs)
-        elif func.__name__ == "syn_request":
+        elif func == "syn_request":
             return self.__process_syn_request(**kwargs)
-        elif func.__name__ == "read":
+        elif func== "read":
             return self.__process_read(**kwargs)
-        elif func.__name__ == "write":
+        elif func == "write":
             return self.__process_write(**kwargs)
         else:
             #TODO Raise exception?

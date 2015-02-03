@@ -1,3 +1,4 @@
+import xmlrpclib
 from distributed.storage.src.config.config import DSConfig
 
 from distributed.storage.src.api.server.west import ServerWestAPI
@@ -11,6 +12,8 @@ from distributed.storage.src.driver.controller.default.south import ControllerSo
 from distributed.storage.src.driver.db.endpoint.default import DefaultEndPointDB
 
 import uuid
+from distributed.storage.src.util.packetmanager import PacketManager
+from distributed.storage.src.util.threadmanager import ThreadManager
 
 
 class ServerManager:
@@ -18,7 +21,6 @@ class ServerManager:
     def __init__(self, db=None, id=None):
         if not id:
             id = uuid.uuid4()
-
 
         self.__nf_manager = None
 
@@ -39,41 +41,43 @@ class ServerManager:
     def configure(self):
         self.__configure_west_backend()
         self.__configure_south_backend()
-        self.__configure_north_backend()
+
 
     def __configure_west_backend(self):
         pipe = self
         db = DefaultEndPointDB()
-        driver = ServerWestDriver(db, pipe)
+        driver = ServerWestDriver(db=db, pipe=pipe)
         api = ServerWestAPI(driver)
         self.__west_backend = api
 
-    def __configure_north_backend(self):
-        api = ServerNorthAPI()
-        self.__north_backend = api
+    def __start_north_backend(self):
+        controller_url = DSConfig.CONTROLLER_URL
+        controller_iface = xmlrpclib.ServerProxy(controller_url)
+        self.__north_backend = controller_iface
+
 
     def __configure_south_backend(self):
         pipe = self
-        db = DefaultEndPointDB()
-        driver = ServerSouthDriver(db, pipe)
+        packet_manager = PacketManager
+        driver = ServerSouthDriver(packet_manager=packet_manager, pipe=pipe)
         api = ServerSouthAPI(driver)
 
         self.__south_backend = api
 
     def start(self, mgmt_ip, mgmt_port, data_ip, data_port):
-        #TODO: Doesn't work, start() takes exactly 2 arguments (3 given)
         self.__south_backend.start(mgmt_ip, mgmt_port)
         self.__west_backend.start(data_ip, data_port)
-        self.__north_backend.start("http://"+DSConfig.CONTROLLER_URL)
-        self.__north_backend.join(self.__id, self.__type, mgmt_ip, data_ip)
+        self.__start_north_backend()
+        result = ThreadManager.start_method_in_new_thread(self.__north_backend.join, [self.__id, self.__type, mgmt_ip, data_ip])
         if self.__db:
             self.__db.load_all()
+        return result
 
     def alert(self, func, **kwargs):
         #TODO: Implement
-        if func.__name__ == "write":
+        if func == "write":
             self.__process_write(**kwargs)
-        elif func.__name__ == "ping":
+        elif func == "ping":
             self.__process_ping(**kwargs)
         else:
             #TODO See what we can do

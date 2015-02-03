@@ -2,7 +2,6 @@ from distributed.storage.src.base.endpointeast import EndPointEastBase
 from distributed.storage.src.util.threadmanager import ThreadManager
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 
-
 class ClientWestServer(EndPointEastBase):
     """
     Client-server side, receiver
@@ -11,11 +10,11 @@ class ClientWestServer(EndPointEastBase):
     def __init__(self, driver):
         self.__driver = driver
 
-    def ping(self,):
+    def ping(self):
         return self.__driver.ping()
 
     def syn(self):
-        return self.__driver.send_sync()
+        return self.__driver.syn()
 
     def read(self, client_id, file_id):
         return self.__driver.read_data()
@@ -47,5 +46,5 @@ class ClientWestAPI:
 
     def start(self, ip, port):
         self.__handler.set_up_client(ip, port)
-        ThreadManager.start_method_in_new_thread(self.__handler.start_client, [])
+        ThreadManager.start_method_in_new_thread(self.__handler.start_client, [], name="ClientWest-"+ip+":"+str(port))
         return True

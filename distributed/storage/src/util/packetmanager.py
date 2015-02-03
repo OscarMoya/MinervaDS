@@ -6,7 +6,11 @@ class PacketManager:
     @staticmethod
     def send_sync():
         command = PacketManager.generate_command_to_sync()
-        subprocess.call(command, stdout=subprocess.PIPE)
+        try:
+            subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        except:
+            subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
+
         return True
 
     @staticmethod
