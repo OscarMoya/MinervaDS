@@ -16,7 +16,7 @@ class ServerWestServer(EndPointEastBase):
         return self.__driver.ping()
 
     def syn(self):
-        return self.__driver.send_sync()
+        return self.__driver.syn()
 
     def read(self, client_id, file_id):
         return self.__driver.read_data()
@@ -50,7 +50,7 @@ class ServerWestAPI():
 
     def start(self, ip, port):
         self.__handler.set_up_server(ip, port)
-        ThreadManager.start_method_in_new_thread(self.__handler.start_server, [])
+        ThreadManager.start_method_in_new_thread(self.__handler.start_server, [],name=ip+":"+str(port))
         return True
 
 

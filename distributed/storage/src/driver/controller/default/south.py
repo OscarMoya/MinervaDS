@@ -20,16 +20,20 @@ class ControllerSouthDriver(EndPointNorthBase):
         self.CHUNK_AXB_TYPE = "AxB"
 
     @processoutput
+    def ping(self):
+        return "Pong"
+
+    @processoutput
     def join(self, id, type, mgmt_ip, data_ip):
         url = "http://%s:%d" % (mgmt_ip, DSConfig.DEFAULT_MGMT_PORT)
         result = self.__endpoint_db.save(id=id, type=type, url=mgmt_ip, data_ip=data_ip)
-        self.__alert_pipe(self.join, id=id, type=type, url=url, data_ip=data_ip)
+        self.__alert_pipe("join", id=id, type=type, url=url, data_ip=data_ip)
         return result
 
     @processoutput
     def leave(self, id):
-        result = self.__endpoint_db.remove(id)
-        self.__alert_pipe(self.leave, id=id)
+        result = self.__endpoint_db.remove(id=id)
+        self.__alert_pipe("leave", id=id)
         return result
 
     def read_request(self, client_id, file_id,):
@@ -41,7 +45,7 @@ class ControllerSouthDriver(EndPointNorthBase):
                   self.CHUNK_B_TYPE: server_b.get("server_url"),
                   self.CHUNK_AXB_TYPE:server_c.get("server_url")}
 
-        self.__alert_pipe(self.read_request, client_id=client_id, file_id=file_id)
+        self.__alert_pipe("read_request", client_id=client_id, file_id=file_id)
         return result
 
     def write_request(self, client_id, file_size, user_requirements):
@@ -63,7 +67,7 @@ class ControllerSouthDriver(EndPointNorthBase):
                   self.CHUNK_B_TYPE: server_b.get("server_url"),
                   self.CHUNK_AXB_TYPE: server_c.get("server_url"), }
 
-        self.__alert_pipe(self.write_request, client_id=client_id, file_id=file_id)
+        self.__alert_pipe("write_request", client_id=client_id, file_id=file_id)
         return result
 
     def start(self):
@@ -84,4 +88,4 @@ class ControllerSouthDriver(EndPointNorthBase):
 
     def __alert_pipe(self, func, **kwargs):
         if self.__pipe:
-            return self.__pipe.alert(func, kwargs)
+            return self.__pipe.alert(func, **kwargs)

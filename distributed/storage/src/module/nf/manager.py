@@ -19,7 +19,7 @@ class NF_Manager:
         chunk = {"type": "type",
                 "value": "string"}
         """
-        #TODO: Check file_chunks contents to determine how to proceed on chunk_type assignation
+        #TODO: Check file_chunks contents to determine how to oceed on chunk_type assignation
 
         types = list()
         strings = list()

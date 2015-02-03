@@ -11,7 +11,7 @@ class ClientSouthServer(ControllerSouthBase):
         return self.__driver.ping()
 
     def syn_request(self):
-        return self.__driver.send_sync()
+        return self.__driver.syn_request()
 
 
 class ClientSouthServerHandler:
@@ -37,6 +37,6 @@ class ClientSouthAPI:
 
     def start(self, ip, port):
         self.__handler.set_up_server(ip, port)
-        ThreadManager.start_method_in_new_thread(self.__handler.start_server, [])
+        ThreadManager.start_method_in_new_thread(self.__handler.start_server, [],name="Client South "+ip+":"+str(port))
         return True
 

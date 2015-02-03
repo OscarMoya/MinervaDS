@@ -5,6 +5,8 @@ from distributed.storage.src.driver.db.file.default import DefaultFileDB
 from distributed.storage.src.driver.db.endpoint.default import DefaultEndPointDB
 
 import xmlrpclib
+from distributed.storage.src.util.threadmanager import ThreadManager
+
 
 class ControllerManager:
 
@@ -15,52 +17,42 @@ class ControllerManager:
         self.active_endpoints = dict()
 
     def start(self, mgmt_ip, mgmt_port):
-        #
         self.__south_backend.start(mgmt_ip, mgmt_port)
 
     def configure(self):
         self.__configure_south_backend()
-        self.__configure_north_backend()
 
-    def __configure_north_backend(self):
-        self.__north_backend = self.__get_north_backend()
 
     def __configure_south_backend(self):
         self.__south_backend = self.__get_south_backend()
 
-    def __get_north_backend(self):
-        #TODO: Fix it
-        north_backend = ControllerNorthServer()
-
-        return north_backend
 
     def __get_south_backend(self):
-        #
-
         pipe = self
-        db = DefaultEndPointDB()
-        south_backend_driver = ControllerSouthDriver(db, pipe)
+        e_db = DefaultEndPointDB()
+        f_db = DefaultFileDB()
+        south_backend_driver = ControllerSouthDriver(endpoint_db=e_db, pipe=pipe, file_db=f_db)
         api = ControllerSouthAPI(south_backend_driver)
         self.__south_backend = api
         return self.__south_backend
 
     def alert(self, func, **kwargs):
-        if func.__name__ == "join":
+        if func == "join":
             self.__process_join_event(**kwargs)
-        elif func.__name__ == "leave":
+        elif func == "leave":
             self.__process_leave_event(**kwargs)
-        elif func.__name__ == "read_request":
+        elif func == "read_request":
             self.__process_read_request_event(**kwargs)
-        elif func.__name__ == "write_request":
+        elif func == "write_request":
             self.__process_write_request_event(**kwargs)
         else:
             #TODO See what we can do
             pass
 
     def __process_join_event(self, **kwargs):
-        self.__add_endpoint(self, **kwargs)
-        endpoint = self.__mount_endpoint(kwargs.get("id"))
-        endpoint.send_sync()
+        self.__add_endpoint(**kwargs)
+        endpoint = self.__mount_endpoint(id = kwargs.get("id"))
+        ThreadManager.start_method_in_new_thread(endpoint.syn_request, [], name=kwargs.get("id"))
 
     def __process_leave_event(self, **kwargs):
         self.__remove_endpoint(kwargs.get("id"))
@@ -83,5 +75,8 @@ class ControllerManager:
 
     def __mount_endpoint(self, id):
         endpoint = self.active_endpoints.get(id)
-        mounted_endpoint = xmlrpclib.ServerProxy("http://"+endpoint.get("url"))
+        mounted_endpoint = xmlrpclib.ServerProxy(endpoint.get("url"))
         return mounted_endpoint
+
+    def get_south_backend(self):
+        return self.__south_backend
