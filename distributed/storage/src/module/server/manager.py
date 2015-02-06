@@ -1,4 +1,6 @@
+import threading
 import xmlrpclib
+from distributed.storage.src.channel.engine import ChannelEngine
 from distributed.storage.src.config.config import DSConfig
 
 from distributed.storage.src.api.server.west import ServerWestAPI
@@ -21,6 +23,9 @@ class ServerManager:
     def __init__(self, db=None, id=None):
         if not id:
             id = uuid.uuid4()
+
+        if not db:
+            db = DefaultFileDB("server")
 
         self.__nf_manager = None
 
@@ -45,8 +50,9 @@ class ServerManager:
 
     def __configure_west_backend(self):
         pipe = self
-        db = DefaultFileDB()
-        driver = ServerWestDriver(db=db, pipe=pipe)
+        db = DefaultFileDB("server")
+        self.__west_db = db
+        driver = ServerWestDriver(db=self.__west_db, pipe=pipe)
         api = ServerWestAPI(driver)
         self.__west_backend = api
 
@@ -74,7 +80,7 @@ class ServerManager:
 
         result = ThreadManager.start_method_in_new_thread(self.__north_backend.join, [self.__id, self.__type, mgmt_url, data_url])
         if self.__db:
-            self.__db.load_all()
+            self.__db.load()
         return result
 
     def alert(self, func, **kwargs):
@@ -83,6 +89,8 @@ class ServerManager:
             self.__process_write(**kwargs)
         elif func == "ping":
             self.__process_ping(**kwargs)
+        elif func == "controller_write_request":
+            self.__send_to_client(**kwargs)
         else:
             #TODO See what we can do
             pass
@@ -117,3 +125,19 @@ class ServerManager:
 
     def get_db(self):
         return self.__db
+
+    def __send_to_client(self, **kwargs):
+        client = self.__mount_channel(kwargs.get("channel"), kwargs.get("client_url"))
+        file_entry = self.__west_db.filter(chunk_id=kwargs.get("chunk_id"))[0]
+        chunk_type = file_entry.get(kwargs.get("chunk_id")).get("chunk_type")
+        data = file_entry.get(kwargs.get("chunk_id")).get("file_data")
+        ThreadManager.start_method_in_new_thread(client.write, [data, chunk_type,kwargs.get("chunk_id")])
+
+    def __mount_channel(self, channel_type, url):
+        engine = ChannelEngine()
+        channel = engine.load_type(channel_type)
+        channel = channel(url)
+        channel.start()
+        return channel
+
+

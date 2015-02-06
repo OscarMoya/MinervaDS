@@ -20,9 +20,12 @@ class ServerWestDriver(EndPointEastBase):
         return result
 
     def write(self, file_data, file_id, chunk_type):
-        result = self.__data_db.save(file_data=file_data, file_id=file_id, chunk_type=chunk_type)
-        self.__alert_pipe("write", file_id=file_id, chunk_type=chunk_type)
+        chunk_id = file_id + "-" + chunk_type
+        result = self.__data_db.save(file_data=file_data, file_id=file_id, chunk_type=chunk_type, chunk_id=chunk_id)
+        self.__alert_pipe("write", file_id=file_id, chunk_type=chunk_type, chunk_id=chunk_id)
         return result
+
+
 
     def __alert_pipe(self, func, **kwargs):
         if self.__pipe:

@@ -13,6 +13,9 @@ class ServerSouthServer(ControllerSouthBase):
     def syn_request(self):
         return self.__driver.syn_request()
 
+    def write_request(self, client_url, file_id, channel):
+        return self.__driver.write_request(client_url, file_id, channel)
+
 class ServerSouthServerHandler:
 
     def __init__(self, driver):

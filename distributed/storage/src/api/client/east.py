@@ -19,7 +19,7 @@ class ClientEastAPI(EndPointEastBase):
         return self.__process_result(result)
 
     def write(self, file_data, file_id, chunk_type):
-        result = self.__client_east_channel.write(file_data, file_id,)
+        result = self.__client_east_channel.write(file_data, file_id, chunk_type)
         return self.__process_result(result)
 
     def __start(self, ip, port):

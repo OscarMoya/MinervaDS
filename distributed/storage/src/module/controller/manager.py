@@ -5,6 +5,7 @@ from distributed.storage.src.driver.db.file.default import DefaultFileDB
 from distributed.storage.src.driver.db.endpoint.default import DefaultEndPointDB
 
 import xmlrpclib
+from distributed.storage.src.driver.db.location.default import DefaultLocationDB
 from distributed.storage.src.util.threadmanager import ThreadManager
 
 
@@ -22,15 +23,15 @@ class ControllerManager:
     def configure(self):
         self.__configure_south_backend()
 
-
     def __configure_south_backend(self):
         self.__south_backend = self.__get_south_backend()
 
-
     def __get_south_backend(self):
         pipe = self
-        e_db = DefaultEndPointDB()
-        f_db = DefaultFileDB()
+        e_db = DefaultEndPointDB("controller")
+        f_db = DefaultLocationDB("controller")
+        self.__endpoint_db = e_db
+        self.__file_db = f_db
         south_backend_driver = ControllerSouthDriver(endpoint_db=e_db, pipe=pipe, file_db=f_db)
         api = ControllerSouthAPI(south_backend_driver)
         self.__south_backend = api
@@ -58,8 +59,32 @@ class ControllerManager:
         self.__remove_endpoint(kwargs.get("id"))
 
     def __process_read_request_event(self, **kwargs):
-        #TODO probably just log the call
-        pass
+
+        file_id = kwargs.get("file_id")
+        client_id = kwargs.get("client_id")
+
+        chunk_id_a = file_id + "-A"
+        chunk_id_b = file_id + "-B"
+        chunk_id_c = file_id + "-AxB"
+
+        server_a = self.__file_db.filter(chunk_id=chunk_id_a, file_id=file_id, client_id=client_id, chunk_type="A")[0]
+        server_b = self.__file_db.filter(chunk_id=chunk_id_b, file_id=file_id, client_id=client_id, chunk_type="B")[0]
+        server_c = self.__file_db.filter(chunk_id=chunk_id_c, file_id=file_id, client_id=client_id, chunk_type="AxB")[0]
+
+        server_a_id = server_a[server_a.keys()[0]].get("server_id")
+        server_b_id = server_b[server_b.keys()[0]].get("server_id")
+        server_c_id = server_c[server_c.keys()[0]].get("server_id")
+
+        server_a_endpoint = self.__mount_endpoint( server_a_id, "mgmt")#self.__endpoint_db.filter(id=server_a_id)[0]
+        server_b_endpoint = self.__mount_endpoint( server_b_id, "mgmt")#self.__endpoint_db.filter(id=server_b_id)[0]
+        server_c_endpoint =self.__mount_endpoint( server_c_id, "mgmt") #self.__endpoint_db.filter(id=server_c_id)[0]
+
+        client = self.__endpoint_db.filter(id=client_id)[0]
+        client_url = client.get(client_id).get("data_url")
+
+        ThreadManager.start_method_in_new_thread(server_a_endpoint.write_request, [client_url, chunk_id_a, self.__get_channel({})])
+        ThreadManager.start_method_in_new_thread(server_b_endpoint.write_request, [client_url, chunk_id_b, self.__get_channel({})])
+        ThreadManager.start_method_in_new_thread(server_c_endpoint.write_request, [client_url, chunk_id_c, self.__get_channel({})])
 
     def __process_write_request_event(self, **kwargs):
         #TODO probably just log the call
@@ -74,10 +99,13 @@ class ControllerManager:
         self.active_endpoints.pop(id)
 
     def __mount_endpoint(self, id, type):
-
         endpoint = self.active_endpoints.get(id)
         mounted_endpoint = xmlrpclib.ServerProxy(endpoint.get("%s_url" % type))
         return mounted_endpoint
 
     def get_south_backend(self):
         return self.__south_backend
+
+    def __get_channel(self, requirements):
+        return "dummy"
+

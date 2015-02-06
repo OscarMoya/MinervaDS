@@ -1,9 +1,12 @@
+import xmlrpclib
 from distributed.storage.src.base.endpointnorth import EndPointNorthBase
 from distributed.storage.src.config.config import DSConfig
 
 from distributed.storage.lib.decorator.processoutput import processoutput
 
 import uuid
+from distributed.storage.src.util.threadmanager import ThreadManager
+
 
 class ControllerSouthDriver(EndPointNorthBase):
 
@@ -35,21 +38,22 @@ class ControllerSouthDriver(EndPointNorthBase):
         self.__alert_pipe("leave", id=id)
         return result
 
-    def read_request(self, client_id, file_id,):
-        server_a = self.__file_db.filter(file_id=file_id, client_id=client_id, chunk_type=self.CHUNK_A_TYPE)[0]
-        server_b = self.__file_db.filter(file_id=file_id, client_id=client_id, chunk_type=self.CHUNK_B_TYPE)[0]
-        server_c = self.__file_db.filter(file_id=file_id, client_id=client_id, chunk_type=self.CHUNK_AXB_TYPE)[0]
+    def read_request(self, client_id, file_id):
 
-        result = {self.CHUNK_A_TYPE: server_a.get("server_url"),
-                  self.CHUNK_B_TYPE: server_b.get("server_url"),
-                  self.CHUNK_AXB_TYPE:server_c.get("server_url")}
 
-        self.__alert_pipe("read_request", client_id=client_id, file_id=file_id)
+        result = {self.CHUNK_A_TYPE: file_id,
+                  self.CHUNK_B_TYPE: file_id,
+                  self.CHUNK_AXB_TYPE:file_id}
+
+        ThreadManager.start_method_in_new_thread(self.__alert_wrap, ["read_request", client_id, file_id])
         return result
 
     def write_request(self, client_id, file_size, user_requirements):
+        try:
+            servers = self.__endpoint_db.filter(type=self.SERVER_TYPE)
+        except Exception as e:
+            raise e
 
-        servers = self.__endpoint_db.filter(type=self.SERVER_TYPE)
         file_id = str(uuid.uuid4())
         #TODO: do the magic getting the most suitable servers :)
 
@@ -60,12 +64,10 @@ class ControllerSouthDriver(EndPointNorthBase):
         server_b = servers[1]
         server_c = servers[2]
 
-        print servers[0]
-
         #XXX This should not be stored here
-        self.__file_db.save(client_id=client_id, id=server_a.keys()[0], file_id=file_id, chunk_type=self.CHUNK_A_TYPE)
-        self.__file_db.save(client_id=client_id, id=server_b.keys()[0], file_id=file_id, chunk_type=self.CHUNK_B_TYPE)
-        self.__file_db.save(client_id=client_id, id=server_c.keys()[0], file_id=file_id, chunk_type=self.CHUNK_AXB_TYPE)
+        self.__file_db.save(chunk_id=file_id+"-"+self.CHUNK_A_TYPE, client_id=client_id, server_id=server_a.keys()[0], file_id=file_id, chunk_type=self.CHUNK_A_TYPE)
+        self.__file_db.save(chunk_id=file_id+"-"+self.CHUNK_B_TYPE, client_id=client_id, server_id=server_b.keys()[0], file_id=file_id, chunk_type=self.CHUNK_B_TYPE)
+        self.__file_db.save(chunk_id=file_id+"-"+self.CHUNK_AXB_TYPE, client_id=client_id, server_id=server_c.keys()[0], file_id=file_id, chunk_type=self.CHUNK_AXB_TYPE)
 
         channel = self.__get_channel(user_requirements)
 
@@ -99,4 +101,11 @@ class ControllerSouthDriver(EndPointNorthBase):
             return self.__pipe.alert(func, **kwargs)
 
     def __get_channel(self, requirements):
-        return "dummy"#TODO implement
+        return "dummy" #TODO implement
+
+    def __mount_server(self, url):
+        return xmlrpclib.ServerProxy(url)
+
+    def __alert_wrap(self, method, client_id, file_id):
+        self.__alert_pipe(method, client_id=client_id, file_id=file_id)
+
