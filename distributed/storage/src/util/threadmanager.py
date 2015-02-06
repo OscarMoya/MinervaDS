@@ -20,8 +20,4 @@ class ThreadManager(Thread):
         self.start()
 
     def run(self):
-        try:
-            self.__method(*self.__params)
-        except Exception as e:
-            print e
-            traceback.print_exc()
+        self.__method(*self.__params)

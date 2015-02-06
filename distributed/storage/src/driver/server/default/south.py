@@ -16,6 +16,9 @@ class ServerSouthDriver(ControllerSouthBase):
         self.__alert_pipe("syn_request")
         return result
 
+    def write_request(self, client_url, chunk_id, channel):
+        self.__alert_pipe("controller_write_request", client_url=client_url, chunk_id=chunk_id, channel=channel)
+
     def set_packet_manager(self, manager):
         self.__packet_manager = manager
 

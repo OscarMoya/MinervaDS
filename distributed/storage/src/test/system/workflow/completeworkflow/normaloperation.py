@@ -8,6 +8,7 @@ from distributed.storage.src.module.server.manager import ServerManager
 from distributed.storage.src.test.mock.client.mockedchannel import MockedChannel
 from distributed.storage.src.util.threadmanager import ThreadManager
 
+import os
 import unittest
 
 class ClientManagerWorkFlow(unittest.TestCase):
@@ -29,7 +30,6 @@ class ClientManagerWorkFlow(unittest.TestCase):
         self.mgmt_port = 9797
         self.data = "Hello World"
 
-
         self.controller_manager = ControllerManager()
         print "Staring Controller Manager...."
         self.controller_manager.start(self.ct_mgmt_ip, self.mgmt_port)
@@ -44,7 +44,6 @@ class ClientManagerWorkFlow(unittest.TestCase):
         self.client_manager.start(self.cl_mgmt_ip, self.mgmt_port, self.cl_data_ip, self.data_port)
         print "Client OK"
 
-
         time.sleep(1)
 
         print "Staring Server Manager...."
@@ -53,32 +52,37 @@ class ClientManagerWorkFlow(unittest.TestCase):
 
         time.sleep(1)
 
+    def tearDown(self):
+        os.remove("controllerendpoint")
+        os.remove("controllerlocation")
+        os.remove("clientfile")
+        os.remove("serverfile")
+
     def test_normal_operation(self):
         print "Checking DB before upload..."
         self.check_controller_endpoints_after_join()
         print "DB is correct. Preparing to upload a file..."
         time.sleep(1)
 
-
         print "About to upload a file..."
-        result = self.client_manager.upload_file(self.data, {})
+        result, file_id = self.client_manager.upload_file(self.data, {})
         print "File uploaded, Checking result..."
         self.check_result_is_true(result)
         print "Result OK. Checking manager statuses..."
-        self.check_params_after_upload()
+        self.check_params_after_upload(file_id)
         print "Status OK. Preparing to download...\n\n\n"
 
-        """
         time.sleep(1)
 
         print "About to download a file..."
-        result = self.client_manager.download_file(self.file_id)
+        result = self.client_manager.download_file(file_id)
         print "File Downloaded. Checking Result..."
         self.check_result_is_true(result)
         print "Result OK. Checking manager statuses..."
         self.check_params_after_download()
         print "Status OK. preparing to leave..."
 
+        """
         time.sleep(1)
         print "Client is about to leave..."
         result = self.client_manager.leave()
@@ -102,10 +106,12 @@ class ClientManagerWorkFlow(unittest.TestCase):
     def check_result_is_true(self, result):
         self.assertTrue(result)
 
-    def check_params_after_upload(self):
+    def check_params_after_upload(self, file_id):
         db = self.server_manager.get_db()
-        print db.load()
-
+        data = db.load()
+        self.assertTrue(data.has_key(file_id + "-A"))
+        self.assertTrue(data.has_key(file_id + "-B"))
+        self.assertTrue(data.has_key(file_id + "-AxB"))
 
     def check_params_after_download(self):
         pass
@@ -157,7 +163,6 @@ class ClientManagerWorkFlow(unittest.TestCase):
 
         self.assertEquals(len(expected_keys), len(obtained_keys))
         self.assertEquals(expected_keys, obtained_keys)
-
 
 if __name__ == "__main__":
     unittest.main()

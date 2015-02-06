@@ -17,8 +17,8 @@ class DefaultDB(DBBase):
         data = self.load()
         id = kwargs.pop(self.PRIMARY_KEY)
         data[id] = kwargs
-        self.__write(data)
 
+        self.__write(data)
         return True
 
     def load(self, **kwargs):
@@ -29,37 +29,27 @@ class DefaultDB(DBBase):
             return self.filter(**kwargs)
 
     def filter(self, **kwargs):
-        matches = list()
-        table = self.__load_all()
+        db = self.__load_all()
+        id = kwargs.get(self.PRIMARY_KEY)
+        if id:
+            entry = db.get(id)
+            kwargs.pop(self.PRIMARY_KEY)
+            if not kwargs:
+                return [{id:db[id]}]
 
-        for id in table:
-            entry = table[id]
-            id_match = None
+            if set(kwargs.keys()).issubset(set(entry.keys())) and set(kwargs.values()).issubset(set(entry.values())):
+                return [{id:db[id]}]
+            else:
+                return list()
+        else:
+            result = list()
+            for id in db:
+                entry = db[id]
+                if set(kwargs.keys()).issubset(set(entry.keys())) and set(kwargs.values()).issubset(set(entry.values())):
+                    result.append({id:db[id]})
 
-            matched = False
-            if kwargs.has_key(self.PRIMARY_KEY):
-                id_match = False
-                if not id == kwargs.pop(self.PRIMARY_KEY):
-                    continue
-                else:
-                    id_match = True
-            for field in kwargs:
-                if not entry.get(field) == kwargs.get(field):
-                    matched = False
-                    break
-                matched = True
+            return result
 
-            if not kwargs and id_match in[True, False]:
-                matched = id_match
-            elif kwargs and id_match in[True, False]:
-                matched = matched and id_match
-            elif kwargs and not id_match in[True, False]:
-                pass
-
-            if matched:
-                matches.append({id:entry})
-
-        return matches
 
     def remove(self, **kwargs):
         data = self.load()
@@ -75,7 +65,7 @@ class DefaultDB(DBBase):
                 f = open(self.DB_NAME, "r+")
                 data = pickle.load(f)
                 f.close()
-            except:
+            except Exception as e:
                 data = dict()
         return data
 

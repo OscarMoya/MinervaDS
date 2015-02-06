@@ -5,6 +5,9 @@ class NFManager:
     def __init__(self):
 
         self.configure()
+        self.A_CHUNK_TYPE = "A"
+        self.B_CHUNK_TYPE = "B"
+        self.AxB_CHUNK_TYPE = "AxB"
         self.__full_chunk = None
 
     def configure(self):
@@ -54,29 +57,38 @@ class NFManager:
         return file_chunks
 
 
-    def reconstruct(self, file_chunks):
+    def reconstruct(self, chunks):
 
         #TODO: Call chunk_parser to get the n-flows types, values
-        types, values = self.chunk_parser(file_chunks)
+        chunks = self.parse_chunks(chunks)
 
         #TODO: For now, reconstruct just merges chunks' strings
         #num_chunks = len(file_chunks)
 
-        """
-        if a and not b:
-            b = hex(int(a, 16) ^ int(axorb, 16))[2:]
+        a = chunks.get(self.A_CHUNK_TYPE)
+        b = chunks.get(self.B_CHUNK_TYPE)
+        c = chunks.get(self.AxB_CHUNK_TYPE)
+
+        if a and c and not b:
+            b = hex(int(a, 16) ^ int(c, 16))[2:]
             if b[-1] in '|L':
                 b = b[:-1]
 
         elif not a and b:
-            a = hex(int(b, 16) ^ int(axorb, 16))[2:]
+            a = hex(int(b, 16) ^ int(c, 16))[2:]
             if a[-1] in '|L':
                 a = a[:-1]
-        """
-        result = ""
 
-        for string in values:
-            result += string
+        result = a + b
 
         self.__full_chunk = binascii.a2b_hex(result)
         return self.__full_chunk
+
+    def parse_chunks(self, chunks):
+        result = dict()
+        for chunk in chunks:
+
+            type = chunk.get(chunk.keys()[0]).get("chunk_type")
+            data = chunk.get(chunk.keys()[0]).get("file_data")
+            result[type] = data
+        return result

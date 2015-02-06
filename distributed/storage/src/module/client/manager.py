@@ -49,8 +49,10 @@ class ClientManager:
         self.__db = db
 
         self.__requests = dict()
+        self.__ready = dict()
 
         self.configure()
+
 
     def configure(self):
         self.__configure_west_backend()
@@ -77,12 +79,20 @@ class ClientManager:
 
     def download_file(self, file_id):
         #TODO lock this thread or send the locker
-        chunks = self.__north_backend.read_request(file_id)
+        chunks = self.__north_backend.read_request(self.__id, file_id)
         local_request = dict()
-        for chunk in chunks:
-            local_request[chunk.get(id)] = False
+        local_request[file_id] = dict()
+        for chunk_id in chunks:
+            local_request.get(file_id)[chunk_id] = False
 
-        self.__requests[file_id] = local_request
+        self.__requests.update(local_request)
+        self.__ready[file_id] = False
+        while not self.__ready[file_id]:
+            True
+
+        chunks = self.__file_db.filter(file_id=file_id)
+        file = self.__construct_file(chunks)
+        return file
 
     def __configure_south_backend(self):
         packet_manager = PacketManager
@@ -95,7 +105,8 @@ class ClientManager:
     def __configure_west_backend(self):
         pipe = self
         #endpoint_db = DefaultEndPointDB()
-        file_db = DefaultFileDB()
+        file_db = DefaultFileDB("client")
+        self.__file_db = file_db
         driver = ClientWestDriver(db=file_db, pipe=pipe)
         api = ClientWestAPI(driver)
         self.__west_backend = api
@@ -105,27 +116,8 @@ class ClientManager:
         controller_iface = xmlrpclib.ServerProxy(controller_url)
         self.__north_backend = controller_iface
 
-    def __load_chunks(self, servers, file_id):
-
-        file_chunks = list()
-
-        server_a = servers.get(self.CHUNK_A_TYPE)
-        server_b = servers.get(self.CHUNK_B_TYPE)
-        server_axb = servers.get(self.CHUNK_AXB_TYPE)
-
-        channel_a = self.__mount_channel(server_a.get("url"), server_a.get("channel"))
-        channel_b = self.__mount_channel(server_b.get("url"), server_b.get("channel"))
-        channel_c = self.__mount_channel(server_axb.get("url"), server_axb.get("channel"))
-
-        result_a = channel_a.read(file_id)
-        result_b = channel_b.read(file_id)
-        result_c = channel_c.read(file_id)
-
-        file_chunks.append(result_a)
-        file_chunks.append(result_b)
-        file_chunks.append(result_c)
-
-        return file_chunks
+    def __load_chunks(self, file_id):
+        self.__ready[file_id] = True
 
     def __send(self, servers, file):
         #TODO This should be more or less processed
@@ -133,7 +125,6 @@ class ClientManager:
         server_a = servers.get(self.CHUNK_A_TYPE)
         server_b = servers.get(self.CHUNK_B_TYPE)
         server_axb = servers.get(self.CHUNK_AXB_TYPE)
-        print "Server A", server_a
 
         channel_a = self.__mount_channel(server_a, servers.get("channel"))
         channel_b = self.__mount_channel(server_b, servers.get("channel"))
@@ -146,22 +137,20 @@ class ClientManager:
         chunk_c = chunk_list.pop(0)
         del chunk_list
 
-        result_a = channel_a.write(chunk_a, servers.get("file_id"),self.CHUNK_A_TYPE )
-        result_b = channel_b.write(chunk_b, servers.get("file_id"),self.CHUNK_B_TYPE )
-        result_c = channel_c.write(chunk_c, servers.get("file_id"),self.CHUNK_AXB_TYPE )
+        result_a = channel_a.write(chunk_a.get("value"), servers.get("file_id"),chunk_a.get("type"))
+        result_b = channel_b.write(chunk_b.get("value"), servers.get("file_id"),chunk_b.get("type"))
+        result_c = channel_c.write(chunk_c.get("value"), servers.get("file_id"),chunk_c.get("type"))
 
-        return True
+        return True, servers.get("file_id")
 
-    def __receive(self, servers, file_id):
-
+    def __receive(self, file_id):
         chunks = self.__requests.get(file_id)
         should_continue = True
-        for chunk_key, chunk_value in chunks:
-            should_continue = should_continue and chunk_value
-
+        for chunk_key in chunks:
+            should_continue = should_continue and chunks[chunk_key]
         if should_continue:
-            chunks = self.__load_chunks(servers, file_id)  #TODO Implement
-            return self.__construct_file(chunks)
+            chunks = self.__load_chunks(file_id)  #TODO Implement
+            #return self.__construct_file(chunks)
 
     def __construct_file(self, file_chunks):
         full_file = self.__nf_manager.reconstruct(file_chunks)
@@ -204,12 +193,14 @@ class ClientManager:
         pass
 
     def __process_write(self, **kwargs):
-        servers = kwargs.get("servers")
-        file_id = kwargs.get("file_id")
-        chunk_id = kwargs.get("chunk").get("id")
-
-        self.__requests[file_id][chunk_id] = True
-        self.__receive(servers, file_id)
+        chunk_id = kwargs.get("chunk_id")
+        file_id = "-".join(chunk_id.split("-")[0:-1])
+        chunk_type = kwargs.get("chunk_type")
+        try:
+            self.__requests[file_id][chunk_type] = True
+        except Exception as e:
+            print e
+        self.__receive(file_id)
 
     def __get_file_size(self, file_size):
         return os.stat(file_size).st_size
