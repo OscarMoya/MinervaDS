@@ -1,12 +1,9 @@
-from SimpleXMLRPCServer import SimpleXMLRPCServer
 import time
-import xmlrpclib
 
 from distributed.storage.src.module.client.manager import ClientManager
 from distributed.storage.src.module.controller.manager import ControllerManager
 from distributed.storage.src.module.server.manager import ServerManager
-from distributed.storage.src.test.mock.client.mockedchannel import MockedChannel
-from distributed.storage.src.util.threadmanager import ThreadManager
+
 
 import os
 import unittest
@@ -79,13 +76,13 @@ class ClientManagerWorkFlow(unittest.TestCase):
         print "File Downloaded. Checking Result..."
         self.check_result_is_true(result)
         print "Result OK. Checking manager statuses..."
-        self.check_params_after_download()
+        self.check_params_after_download(result)
         print "Status OK. preparing to leave..."
 
-        """
+
         time.sleep(1)
         print "Client is about to leave..."
-        result = self.client_manager.leave()
+        result = self.client_manager.disconnect()
         print "Client leaved the controller. Checking result..."
         self.check_result_is_true(result)
         print "Result OK. Checking manager statuses..."
@@ -94,14 +91,14 @@ class ClientManagerWorkFlow(unittest.TestCase):
 
         time.sleep(1)
         print "Server is about to leave..."
-        result = self.server_manager.leave()
+        result = self.server_manager.disconnect()
         print "Server leaved the controller. Checking result..."
         self.check_result_is_true(result)
         print "Result OK. Checking manager statuses..."
         self.check_params_after_server_leave()
         print "Status OK"
         print "Test Finalised"
-        """
+
 
     def check_result_is_true(self, result):
         self.assertTrue(result)
@@ -113,14 +110,17 @@ class ClientManagerWorkFlow(unittest.TestCase):
         self.assertTrue(data.has_key(file_id + "-B"))
         self.assertTrue(data.has_key(file_id + "-AxB"))
 
-    def check_params_after_download(self):
-        pass
+    def check_params_after_download(self, result):
+        self.assertEquals(self.data, result)
+
 
     def check_params_after_client_leave(self):
-        pass
+        endpoints = self.controller_manager.active_endpoints
+        self.assertTrue(self.client_id not in endpoints.keys())
 
     def check_params_after_server_leave(self):
-        pass
+        endpoints = self.controller_manager.active_endpoints
+        self.assertTrue(self.server_id not in endpoints.keys())
 
     def check_controller_endpoints_after_join(self):
         end_points = self.controller_manager.active_endpoints

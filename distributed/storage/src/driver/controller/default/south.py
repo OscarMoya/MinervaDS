@@ -36,7 +36,7 @@ class ControllerSouthDriver(EndPointNorthBase):
     def leave(self, id):
         result = self.__endpoint_db.remove(id=id)
         self.__alert_pipe("leave", id=id)
-        return result
+        return True
 
     def read_request(self, client_id, file_id):
 
