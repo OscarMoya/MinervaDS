@@ -140,4 +140,8 @@ class ServerManager:
         channel.start()
         return channel
 
+    def disconnect(self):
+        self.__north_backend.leave(self.__id)
+        return True
+
 

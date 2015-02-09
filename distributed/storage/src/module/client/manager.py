@@ -53,7 +53,6 @@ class ClientManager:
 
         self.configure()
 
-
     def configure(self):
         self.__configure_west_backend()
         self.__configure_south_backend()
@@ -225,3 +224,7 @@ class ClientManager:
 
     def get_east_backend(self):
         return self.__east_backend
+
+    def disconnect(self):
+        self.__north_backend.leave(self.__id)
+        return True
