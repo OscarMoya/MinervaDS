@@ -18,7 +18,11 @@ import copy
 
 class ResilientPathFinder():
 
-    flows = 3
+    def __init__(self, n_flows=None):
+        if n_flows == None:
+            self.flows = 3
+        else:
+            self.flows = n_flows
 
     def get_potential_paths(self, src_dpid, dst_dpid, matrix, path=list(), result=list()):
         """
@@ -28,20 +32,31 @@ class ResilientPathFinder():
         current_path = copy.deepcopy(path)
         current_path.append(dst_dpid)
 
+        print "..............................dst_dpid", dst_dpid
+        print "..............................src_dpid", src_dpid
+
         if dst_dpid == src_dpid:
+            print "dst_dpid == src_dpid"
             return current_path
 
         if matrix.max() == 0:
+            print "matrix.max() == 0"
             return None
 
         dst_array = self.__get_dpid_array(dst_dpid, len(matrix))
+        print "dst_array", dst_array
         neo_matrix = copy.deepcopy(matrix)
+        print "neo_matrix", neo_matrix
         neo_matrix[dst_dpid - 1].fill(0)
         candidates = self.__get_candidates_to_dst(dst_array, matrix)
+        print "candidates", candidates
 
         for candidate in candidates:
+            print "candidate - candidates", candidate, "-", candidates
+            print "self.get_potential_paths(src_dpid, candidate)", src_dpid, candidate
             circuit = self.get_potential_paths(src_dpid, candidate, neo_matrix, current_path)
             if circuit:
+                print "circuit", circuit
                 result.append(circuit)
 
         return result
@@ -68,9 +83,10 @@ class ResilientPathFinder():
 
     def find_places_for_nfs(self, resilient_paths, n_flows, used_nodes=list()):
         required_nf_pairs = n_flows - len(resilient_paths)
+        print "required_nf_pairs", required_nf_pairs
 
         if required_nf_pairs == 0:
-            return True
+            return None, None
 
         all_nodes = list()
         r_paths = copy.deepcopy(resilient_paths)
