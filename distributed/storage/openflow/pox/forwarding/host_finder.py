@@ -17,15 +17,12 @@ import struct
 from collections import namedtuple
 
 log = core.getLogger()
-
 log.setLevel(logging.INFO)
 
 
 class Hostfinder():
     def __init__(self):
         self.hosts = list()     #ip -> dpid, port
-
-
 
     def get_dpids(self):
         """
@@ -35,11 +32,11 @@ class Hostfinder():
 
         for link in self.topology:
             if link.dpid1 not in net_dpids:
-                print "dpid1", link.dpid1
+                #print "dpid1", link.dpid1
                 net_dpids.append(link.dpid1)
             else:
                 continue
-        print "net_dpids", net_dpids
+        #print "net_dpids", net_dpids
         return net_dpids
 
     def topology_to_matrix(self):
@@ -47,16 +44,16 @@ class Hostfinder():
         table = {}
 
         for link in self.topology:
-            print "link", link
-            print "link.dpid1", link.dpid1
-            print "link.dpid2", link.dpid2
-            print "link.port1", link.port1
+            #print "link", link
+            #print "link.dpid1", link.dpid1
+            #print "link.dpid2", link.dpid2
+            #print "link.port1", link.port1
             try:
                 table[link.dpid1].update({link.dpid2: link.port1})
             except:
                 table[link.dpid1] = ({link.dpid2: link.port1})
 
-        print "TABLE_MATRIX", table
+        #print "TABLE_MATRIX", table
         return table
 
     def update_topology(self):
@@ -94,22 +91,17 @@ class Hostfinder():
         log.info(' Host detected: %s', new_host)
         self.hosts.append(new_host)
         print "new_host: ", new_host
-        print "HOSTS_LIST_UPDATED: ", self.hosts
+        #print "HOSTS_LIST_UPDATED: ", self.hosts
         #self._update_topology(new_host)
         return
 
     def remove_host(self, ip_adr):
-        """
-        for host in self.hosts:
-            self.raiseEventNoErrors(LinkEvent, False, host)
-        for host in self.hosts:
-            self.hosts.pop(host, None)
-        """
         for host in self.hosts:
             if host.ip == ip_adr:
                 log.info(' Host deleted: %s', host)
                 self.hosts.pop(host)
                 return
+
 
 class Link(namedtuple("LinkBase", ("dpid1", "port1", "dpid2", "port2"))):
         @property
@@ -135,13 +127,6 @@ class Link(namedtuple("LinkBase", ("dpid1", "port1", "dpid2", "port2"))):
             self.port1, self.dpid2, self.port2)
 
 class Host(namedtuple("LinkBase", ("ip", "mac", "dpid", "port"))):
-        """
-        @property
-        def uni(self):
-            pairs = list(self.end)
-            pairs.sort()
-            return Link(pairs[0][0], pairs[0][1], pairs[1][0], pairs[1][1])
-        """
         @property
         def end(self):
             return (self[0], self[1], self[2], self[3])

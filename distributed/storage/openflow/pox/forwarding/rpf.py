@@ -24,41 +24,45 @@ class ResilientPathFinder():
         else:
             self.flows = n_flows
 
-    def get_potential_paths(self, src_dpid, dst_dpid, matrix, path=list(), result=list()):
+    def get_potential_paths(self, src_dpid, dst_dpid, matrix, path=None, result=None):
         """
         Find all those candidate paths that might have a resilient path from source to destination
         Old get_resilient_path
         """
+        if path is None:
+            path = list()
+        if result is None:
+            result = list()
+
         current_path = copy.deepcopy(path)
         current_path.append(dst_dpid)
 
-        print "..............................dst_dpid", dst_dpid
-        print "..............................src_dpid", src_dpid
+        #print "..............................src_dpid", src_dpid
 
         if dst_dpid == src_dpid:
-            print "dst_dpid == src_dpid"
+            #print "dst_dpid == src_dpid"
             return current_path
 
         if matrix.max() == 0:
-            print "matrix.max() == 0"
+            #print "matrix.max() == 0"
             return None
 
         dst_array = self.__get_dpid_array(dst_dpid, len(matrix))
-        print "dst_array", dst_array
+        #print "dst_array", dst_array
         neo_matrix = copy.deepcopy(matrix)
-        print "neo_matrix", neo_matrix
+        #print "neo_matrix", neo_matrix
         neo_matrix[dst_dpid - 1].fill(0)
         candidates = self.__get_candidates_to_dst(dst_array, matrix)
-        print "candidates", candidates
+        #print "candidates", candidates
 
         for candidate in candidates:
-            print "candidate - candidates", candidate, "-", candidates
-            print "self.get_potential_paths(src_dpid, candidate)", src_dpid, candidate
-            circuit = self.get_potential_paths(src_dpid, candidate, neo_matrix, current_path)
+            #print "candidate - candidates", candidate, "-", candidates
+            #print "self.get_potential_paths(src_dpid, candidate)", src_dpid, candidate
+            circuit = self.get_potential_paths(src_dpid, candidate, neo_matrix, current_path, result)
             if circuit:
-                print "circuit", circuit
-                result.append(circuit)
-
+                if not type(circuit[0]) == list:
+                    #print "..............................circuit", circuit
+                    result.append(circuit)
         return result
 
     def __get_dpid_array(self, dpid_num, length):
@@ -69,7 +73,6 @@ class ResilientPathFinder():
 
     def __get_candidates_to_dst(self, dst, matrix):
 
-        #TODO:
         result = (matrix * numpy.matrix(numpy.matrix(dst)).T).T     #Formats the matrix as list
         candidates = list()
         i = 0
@@ -113,6 +116,8 @@ class ResilientPathFinder():
         empty_array = list("0" * length)
         adj_array = numpy.array(empty_array, dtype=int)
 
+        #print "........................................", array
+
         for i in array:
             adj_array.put(i-1, 1)
 
@@ -146,7 +151,7 @@ class ResilientPathFinder():
             if best_row[i] == 0:
                 indexes.append(i)
 
-        indexes.insert(src_vector,src_vector)
+        indexes.insert(src_vector, src_vector)
         result = list()
         print "Indexes: ", indexes
 
