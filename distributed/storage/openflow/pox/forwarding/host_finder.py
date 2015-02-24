@@ -2,19 +2,9 @@
 Host Finder/Tracker for RPF
 """
 from pox.core import core
-from service_thread import ServiceThread
-from pox.lib.util import dpidToStr
-import pox.openflow.libopenflow_01 as of
-import pox.lib.packet as pkt
-import time
-import traceback
-import logging
-
-from pox.lib.recoco import Timer
 from pox.lib.util import dpid_to_str
-
-import struct
 from collections import namedtuple
+import logging
 
 log = core.getLogger()
 log.setLevel(logging.INFO)

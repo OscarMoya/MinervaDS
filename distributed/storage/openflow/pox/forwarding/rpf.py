@@ -3,23 +3,13 @@ MINERVA - RPF for POX Controller
 Resilient Path Finder
 """
 
-from pox.core import core
-import pox.openflow.libopenflow_01 as of
-import pox.lib.packet as pkt
-from pox.lib.util import dpidToStr
-from pox.lib.recoco import Timer
-from service_thread import ServiceThread
-import os
-import datetime
-import time
-import traceback
 import numpy
 import copy
 
 class ResilientPathFinder():
 
     def __init__(self, n_flows=None):
-        if n_flows == None:
+        if n_flows is None:
             self.flows = 3
         else:
             self.flows = n_flows
