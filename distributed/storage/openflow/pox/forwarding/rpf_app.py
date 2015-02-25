@@ -133,7 +133,7 @@ class ResilientModule(object):
         log.info("Handling PacketIn")
         eth_headers = event.parse() #Ethernet part of the packet L2
         packet = event.parsed
-        log.info("PacketIn Correctly Parsed")
+        #log.info("PacketIn Correctly Parsed")
 
         dpid = event.dpid
         in_port = event.port
@@ -165,8 +165,8 @@ class ResilientModule(object):
             print "in_port", in_port
             """
 
-            #if dst_ip == self.magic_ip:
-            if dst_ip:
+            if dst_ip == self.magic_ip:
+                #if dst_ip:
                 #print "HOSTS_LIST", self.host_finder.hosts
                 found = self.host_search(src_ip)
 
@@ -174,7 +174,7 @@ class ResilientModule(object):
                 "[Host(ip=192.168.1.3, mac=00:00:00:00:00:22, dpid=5, port=5)]"
                 "[Host(ip=192.168.1.4, mac=00:00:00:00:00:22, dpid=6, port=4)]"
                 "[Host(ip=192.168.1.5, mac=00:00:00:00:00:22, dpid=4, port=5)]"
-
+                """
                 print mcolors.FAIL+"FAKE_ADDING"+mcolors.ENDC
                 if dst_ip == '192.168.1.3':
                     #self.host_finder.add_host(dst_ip, src_mac, 6, 2)
@@ -188,7 +188,7 @@ class ResilientModule(object):
                     self.host_finder.add_host(dst_ip, src_mac, 4, 5)
 
                     #self.host_finder.add_host(dst_ip, src_mac, 6, 2)
-
+                """
                 if not found:
                     log.info(' --> Received packet-in event packet from unknown host')
                     self.host_finder.add_host(src_ip, src_mac, dpid, in_port)
@@ -197,8 +197,8 @@ class ResilientModule(object):
                     log.info(' --> Received packet-in event packet from already known host')    #self.host_finder.hosts
 
             ###########################################################################
-            #else:   # dst_ip != self.magic_ip:
-            if dst_ip:
+            else:   # dst_ip != self.magic_ip:
+                #if dst_ip:
                 log.warning(" Couldn't find magic_ip in packet-in event packet")
 
                 packet_match = Match()
@@ -257,6 +257,7 @@ class ResilientModule(object):
                             return
 
                         dsts_list = list()
+                        dsts_dict = dict()
                         for dsts in dsts_ip:
                             dsts_dpid = self.get_dpid(dsts)
                             print "dsts_dpip", dsts_dpid
@@ -265,6 +266,7 @@ class ResilientModule(object):
                                 return
                             else:
                                 dsts_list.append(dsts_dpid)
+                                dsts_dict[dsts] = dsts_dpid
 
                         location = self.compare_dpid(dsts_list)
 
@@ -278,38 +280,42 @@ class ResilientModule(object):
 
                         else:
                             print "dpid_src", dpid_src
-                            print "dpid_dst", dsts_list
+                            #print "dpid_dst", dsts_list
+                            print "dpid_dst_dict", dsts_dict
 
                             import threading
 
                             result_list = list()
                             #print "---------------------TOPO", matrix
                             with threading.Lock():
-                                res = self.single_rpf(matrix, dpid_src, dsts_list[0], 3)
+                                res = self.single_rpf(matrix, dpid_src, dsts_dict[dsts_ip[0]], 3)
                             print "res1", res
                             time.sleep(1)
 
                             result_list.append(res)
                             #print "---------------------TOPO", matrix
                             with threading.Lock():
-                                res = self.single_rpf(matrix, dpid_src, dsts_list[1], 3)
+                                res = self.single_rpf(matrix, dpid_src, dsts_dict[dsts_ip[1]], 3)
                             print "res2", res
                             time.sleep(1)
 
                             result_list.append(res)
                             #print "---------------------TOPO", matrix
                             with threading.Lock():
-                                res = self.single_rpf(matrix, dpid_src, dsts_list[2], 3)
+                                res = self.single_rpf(matrix, dpid_src, dsts_dict[dsts_ip[2]], 3)
                             print "res3", res
                             time.sleep(1)
 
                             result_list.append(res)
 
                             print "!!!!!!!!!!!!!!!!!!!!!!!!final", result_list
+                            print "!!!!!!!!!!!!!!!!!!!!!!!!", dsts_dict
 
                             print mcolors.FAIL+"!!!!!!!!!MULTI STARTS HERE!!!!!!!!!!!!"+mcolors.ENDC
 
                             final_result_list = self.multi_rpf(result_list, matrix, dpid_src, None)
+
+                            print "FINAL_RESULT_LIST", final_result_list
 
                             """
                             for dst_dpid in dsts_list:
@@ -319,11 +325,11 @@ class ResilientModule(object):
                             print "result_list", result_list
                             """
 
-                            final_result_list = [[2, 5], [2, 3, 5, 6], [2, 4]]
+                            #final_result_list = [[2, 5], [2, 3, 5, 6], [2, 4]]
 
 
                             #self.route_packet(dpid, in_port, vlan_id, mpls_label, event)
-                            self.route_flows(final_result_list, packet_match, srcs_ip, dsts_ip, vlan_id=None, event=None)
+                            #self.route_flows(final_result_list, packet_match, srcs_ip, dsts_ip, vlan_id=None, event=None)
 
 
 
@@ -457,7 +463,6 @@ class ResilientModule(object):
         print "paths", paths
         return paths
 
-    #TODO: Given the resilient paths, install proper flowrules per path
     def route_flows(self, paths, matching, src_ip=None, dsts_ip=None, vlan_id=None, event=None):
         ''' Adds the required rules to the switch flow table:
         (final_result_list, packet_match, srcs_ip, dsts_ip)'''
@@ -564,7 +569,7 @@ class ResilientModule(object):
         msg.match = of.ofp_match(in_port=in_port,
                                  dl_type=0x0800,
                                  nw_src=src_ip,
-                                 nw_dst=dst_ip, )
+                                 nw_dst=dst_ip)
 
         # dl_vlan=vlan_id,
         # Use idle and/or hard timeouts to help cleaning the table
@@ -605,7 +610,7 @@ class ResilientModule(object):
         msg.match = of.ofp_match(in_port=in_port,
                                  dl_type=0x0806,
                                  nw_src=src_ip,
-                                 nw_dst=dst_ip, )
+                                 nw_dst=dst_ip)
 
         # dl_vlan=vlan_id,
 
@@ -633,15 +638,6 @@ class ResilientModule(object):
         print mcolors.FAIL+"<-----------Reverse-ARP-rule<-----------"+mcolors.ENDC
         connection = self.conn_dpids[dpid_conn]
         connection.send(msg)
-
-
-
-
-
-
-
-
-
 
     def paths_length(self, paths):
         lens_list = list()
@@ -877,7 +873,7 @@ class ResilientModule(object):
 
         result = self.rpf_class.get_potential_paths(1, len(all_dpids_cp), matrix_array)
         #result = self.rpf_class.get_potential_paths(1, len(all_dpids_cp), matrix_array, list(), list())
-        print "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzRESULT", result
+        #print "RESULT", result
         #result = self.rpf_class.get_potential_paths(1, len(all_dpids_cp), matrix2)
         final = list()
         #print "result", result
