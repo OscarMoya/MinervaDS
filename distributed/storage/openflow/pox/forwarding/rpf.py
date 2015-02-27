@@ -3,47 +3,56 @@ MINERVA - RPF for POX Controller
 Resilient Path Finder
 """
 
-from pox.core import core
-import pox.openflow.libopenflow_01 as of
-import pox.lib.packet as pkt
-from pox.lib.util import dpidToStr
-from pox.lib.recoco import Timer
-from service_thread import ServiceThread
-import os
-import datetime
-import time
-import traceback
 import numpy
 import copy
 
 class ResilientPathFinder():
 
-    flows = 3
+    def __init__(self, n_flows=None):
+        if n_flows is None:
+            self.flows = 3
+        else:
+            self.flows = n_flows
 
-    def get_potential_paths(self, src_dpid, dst_dpid, matrix, path=list(), result=list()):
+    def get_potential_paths(self, src_dpid, dst_dpid, matrix, path=None, result=None):
         """
         Find all those candidate paths that might have a resilient path from source to destination
         Old get_resilient_path
         """
+        if path is None:
+            path = list()
+        if result is None:
+            result = list()
+
         current_path = copy.deepcopy(path)
         current_path.append(dst_dpid)
 
+        #print "..............................src_dpid", src_dpid
+
         if dst_dpid == src_dpid:
+            #print "dst_dpid == src_dpid"
             return current_path
 
         if matrix.max() == 0:
+            #print "matrix.max() == 0"
             return None
 
         dst_array = self.__get_dpid_array(dst_dpid, len(matrix))
+        #print "dst_array", dst_array
         neo_matrix = copy.deepcopy(matrix)
+        #print "neo_matrix", neo_matrix
         neo_matrix[dst_dpid - 1].fill(0)
         candidates = self.__get_candidates_to_dst(dst_array, matrix)
+        #print "candidates", candidates
 
         for candidate in candidates:
-            circuit = self.get_potential_paths(src_dpid, candidate, neo_matrix, current_path)
+            #print "candidate - candidates", candidate, "-", candidates
+            #print "self.get_potential_paths(src_dpid, candidate)", src_dpid, candidate
+            circuit = self.get_potential_paths(src_dpid, candidate, neo_matrix, current_path, result)
             if circuit:
-                result.append(circuit)
-
+                if not type(circuit[0]) == list:
+                    #print "..............................circuit", circuit
+                    result.append(circuit)
         return result
 
     def __get_dpid_array(self, dpid_num, length):
@@ -54,7 +63,6 @@ class ResilientPathFinder():
 
     def __get_candidates_to_dst(self, dst, matrix):
 
-        #TODO:
         result = (matrix * numpy.matrix(numpy.matrix(dst)).T).T     #Formats the matrix as list
         candidates = list()
         i = 0
@@ -68,9 +76,10 @@ class ResilientPathFinder():
 
     def find_places_for_nfs(self, resilient_paths, n_flows, used_nodes=list()):
         required_nf_pairs = n_flows - len(resilient_paths)
+        print "required_nf_pairs", required_nf_pairs
 
         if required_nf_pairs == 0:
-            return True
+            return None, None
 
         all_nodes = list()
         r_paths = copy.deepcopy(resilient_paths)
@@ -96,6 +105,8 @@ class ResilientPathFinder():
     def generate_adjacency_vector(self, array, length):
         empty_array = list("0" * length)
         adj_array = numpy.array(empty_array, dtype=int)
+
+        #print "........................................", array
 
         for i in array:
             adj_array.put(i-1, 1)
@@ -130,7 +141,7 @@ class ResilientPathFinder():
             if best_row[i] == 0:
                 indexes.append(i)
 
-        indexes.insert(src_vector,src_vector)
+        indexes.insert(src_vector, src_vector)
         result = list()
         print "Indexes: ", indexes
 
