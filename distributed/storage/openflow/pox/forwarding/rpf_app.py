@@ -138,13 +138,14 @@ class ResilientModule(object):
         dpid = event.dpid
         in_port = event.port
 
-        if packet.type == 2054:     #ARP datagram type hex 0806
+        if eth_headers.next.eth_type == 2054:     #ARP datagram type hex 0806
             print "ARP packet detected!"
             #print "packet", packet
             #print "header:", eth_headers
-            print "header.next:", eth_headers.next
+            print "header.next:", eth_headers.next #VLAN header
+            print "header.next.next:", eth_headers.next.next #ARP header
 
-            arp_params = eth_headers.next
+            arp_params = eth_headers.next.next
 
             hw_type = arp_params.hwtype     # arp.HW_TYPE_ETHERNET
             proto_type = arp_params.prototype  # arp.PROTO_TYPE_IP
