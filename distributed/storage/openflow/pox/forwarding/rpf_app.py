@@ -1,5 +1,6 @@
 """
 """
+
 from pox.core import core
 from pox.forwarding.rpf import ResilientPathFinder
 #from distributed.storage.openflow.pox.forwarding.rpf import ResilientPathFinder
@@ -138,14 +139,13 @@ class ResilientModule(object):
         dpid = event.dpid
         in_port = event.port
 
-        if eth_headers.next.eth_type == 2054:     #ARP datagram type hex 0806
+        if packet.type == 2054:     #ARP datagram type hex 0806
             print "ARP packet detected!"
             #print "packet", packet
             #print "header:", eth_headers
-            print "header.next:", eth_headers.next #VLAN header
-            print "header.next.next:", eth_headers.next.next #ARP header
+            print "header.next:", eth_headers.next
 
-            arp_params = eth_headers.next.next
+            arp_params = eth_headers.next
 
             hw_type = arp_params.hwtype     # arp.HW_TYPE_ETHERNET
             proto_type = arp_params.prototype  # arp.PROTO_TYPE_IP
@@ -175,6 +175,7 @@ class ResilientModule(object):
                 "[Host(ip=192.168.1.3, mac=00:00:00:00:00:22, dpid=5, port=5)]"
                 "[Host(ip=192.168.1.4, mac=00:00:00:00:00:22, dpid=6, port=4)]"
                 "[Host(ip=192.168.1.5, mac=00:00:00:00:00:22, dpid=4, port=5)]"
+
                 """
                 print mcolors.FAIL+"FAKE_ADDING"+mcolors.ENDC
                 if dst_ip == '192.168.1.3':
@@ -190,6 +191,7 @@ class ResilientModule(object):
 
                     #self.host_finder.add_host(dst_ip, src_mac, 6, 2)
                 """
+
                 if not found:
                     log.info(' --> Received packet-in event packet from unknown host')
                     self.host_finder.add_host(src_ip, src_mac, dpid, in_port)
@@ -705,7 +707,7 @@ class ResilientModule(object):
 
         return A_arrays, B_arrays, C_arrays
 
-    def matrixer(self, arrays):
+    def matrixer(self, arrays, index):
         matrix_array = numpy.matrix(arrays)
         print "matrix_array", matrix_array
 
@@ -722,6 +724,7 @@ class ResilientModule(object):
             if type(r[0]) == list:
                 continue
             final.append(r)
+            print "for_final", final
 
         flows = self.rpf_class.flows
 
@@ -730,7 +733,7 @@ class ResilientModule(object):
         for i in final:
             if len(i) == 3:
                 len3.append(i)
-
+                print "len3", len3
         import pprint
 
         array_list = list()
@@ -755,7 +758,17 @@ class ResilientModule(object):
         """
 
         for i in final:
-            array_list_2.append(i[1:len(i)])
+            nw_list = list()
+            pos = 0
+            for j in i:
+                if pos != index:
+                    nw_list.append(j)
+                    pos += 1
+                else:
+                    pos += 1
+
+            #array_list_2.append(i[1:len(i)])
+            array_list_2.append(nw_list)
 
         #pprint.pprint(array_list)
         pprint.pprint(array_list_2)
@@ -953,6 +966,10 @@ class ResilientModule(object):
         print "ALL_DPIDS", dpids.keys()
 
         print "dpids_matrix", dpids
+        print "dpid SOURCE", src
+
+        print "src-INDEX", dpids.keys().index(src)
+        src_index = dpids.keys().index(src)
 
         A_array, B_array, C_array = self.paths_to_arrays(paths, dpids)
 
@@ -965,9 +982,9 @@ class ResilientModule(object):
 
         #Create matrixes
 
-        A_matrix = self.matrixer(A_array)
-        B_matrix = self.matrixer(B_array)
-        C_matrix = self.matrixer(C_array)
+        A_matrix = self.matrixer(A_array, src_index)
+        B_matrix = self.matrixer(B_array, src_index)
+        C_matrix = self.matrixer(C_array, src_index)
 
         print "MATRIX A", A_matrix
         print "MATRIX B", B_matrix
@@ -976,8 +993,8 @@ class ResilientModule(object):
         print "BuC Array", B_array+C_array
         print "AuC Array", A_array+C_array
 
-        MAT_BuC = self.matrixer(B_array+C_array)
-        MAT_AuC = self.matrixer(A_array+C_array)
+        MAT_BuC = self.matrixer(B_array+C_array, src_index)
+        MAT_AuC = self.matrixer(A_array+C_array, src_index)
 
         print "MAT_BuC", MAT_BuC
         print "MAT_AuC", MAT_AuC
@@ -1000,6 +1017,9 @@ class ResilientModule(object):
         """
 
         def get_orthogonal_indexes(lengths, orthogonal_sum):
+
+            print "ORTHOGONAL SUM", orthogonal_sum
+            print "LENGTHS", lengths
 
             #print "ranger row", range(0, lengths[0])
             #print "ranger i", range(0, lengths[0])
