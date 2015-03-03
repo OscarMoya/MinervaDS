@@ -483,86 +483,96 @@ class ResilientModule(object):
         i = 0
         for path in paths:
             print "path", path
-            for dpid in path:
-                print "dpid", dpid
-                print "dpid_index_in_path", path.index(dpid)
+            if len(path) == 1:
+                pass #one switch path
 
-                if path.index(dpid) == 0 and dpid == src_dpid:  #First switch after src
-                    print "FIRST"
-                    print "i index", i
-                    next_dpid = path[path.index(dpid)+1]
-                    for link in links:
-                        if (link.dpid1 == dpid and link.dpid2 == next_dpid):
-                            print "link.dpid1", link.dpid1
-                            print "link.dpid2", link.dpid2
-                            print "link.port1", link.port1
-                            print "link.port2", link.port2
-                            print "src_ip", src_ip
-                            print "dst_ip", dsts_ip[i]
+            else:
+                dst_dpid, dst_port = self.get_host_port(dsts_ip[i])
+                print "dst_dpid - dst_port", dst_dpid, "-", dst_port
 
-                            print "self.push_flow(%s, %s, %s, %s, %s, %s, %s)" % (link.dpid1, src_ip, dsts_ip[i], src_port, link.port1, None, None)
-                            self.push_flow(link.dpid1, src_ip, dsts_ip[i], src_port, link.port1, None, None)
-                            #self.push_flow(dpid_conn, src_dpid, dst_dpid, in_port, out_port, vlan_id, event)
+                for dpid in path:
+                    print "dpid", dpid
+                    print "dpid_index_in_path", path.index(dpid)
 
-                            break
+                    if dpid == src_dpid:  #First switch after src
+                        print "SOURCE"
+                        print "i index", i
 
+                        try:
+                            next_dpid = path[path.index(dpid)+1]
 
-                elif path.index(dpid) == (len(path)-1):     #last switch before dst
-                    print "LAST"
-                    print "i index", i
-                    for link in links:
-                        #print "path[(path.index(dpid))-1]", path[(path.index(dpid))-1]
-                        if (link.dpid1 == path[(path.index(dpid))-1] and link.dpid2 == dpid):
-                            print "link.dpid1", link.dpid1
-                            print "link.dpid2", link.dpid2
-                            print "link.port1", link.port1
-                            print "link.port2", link.port2
-                            print "src_ip", src_ip
-                            print "dst_ip", dsts_ip[i]
+                        except:
+                            next_dpid = path[path.index(dpid)-1]
 
-                            dst_dpid, dst_port = self.get_host_port(dsts_ip[i])
-                            print "dst_dpid - dst_port", dst_dpid, "-", dst_port
+                        for link in links:
+                            if (link.dpid1 == dpid) and (link.dpid2 == next_dpid):
+                                print "link.dpid1", link.dpid1
+                                print "link.dpid2", link.dpid2
+                                print "link.port1", link.port1
+                                print "link.port2", link.port2
+                                print "src_ip", src_ip
+                                print "dst_ip", dsts_ip[i]
 
-                            if dst_dpid == link.dpid2:
-
-                                print "self.push_flow(%s, %s, %s, %s, %s, %s, %s)" % (link.dpid2, src_ip, dsts_ip[i], link.port2, dst_port, None, None)
-                                self.push_flow(link.dpid2, src_ip, dsts_ip[i], link.port2, dst_port, None, None)
+                                print "self.push_flow(%s, %s, %s, %s, %s, %s, %s)" % (link.dpid1, src_ip, dsts_ip[i], src_port, link.port1, None, None)
+                                self.push_flow(link.dpid1, src_ip, dsts_ip[i], src_port, link.port1, None, None)
                                 #self.push_flow(dpid_conn, src_dpid, dst_dpid, in_port, out_port, vlan_id, event)
 
                                 break
 
-                else:
 
-                    print "MIDDLE"
-                    print "i index", i
-                    try:
-                        next_dpid = path[path.index(dpid)+1]
-                        pre_dpid = path[path.index(dpid)-1]
-                        for linkx in links:
-                            if (linkx.dpid1 == pre_dpid and linkx.dpid2 == dpid):
-                                pre_port = linkx.port2
-                                print "pre_port = link.port2", pre_port
+                    elif dpid == dst_dpid:     #last switch before dst
+                        print "DESTINATION"
+                        print "i index", i
+                        for link in links:
+                            #print "path[(path.index(dpid))-1]", path[(path.index(dpid))-1]
+                            if (link.dpid1 == path[(path.index(dpid))-1] and link.dpid2 == dpid):
+                                print "link.dpid1", link.dpid1
+                                print "link.dpid2", link.dpid2
+                                print "link.port1", link.port1
+                                print "link.port2", link.port2
+                                print "src_ip", src_ip
+                                print "dst_ip", dsts_ip[i]
 
-                                for linky in links:
-                                    if (linky.dpid1 == dpid and linky.dpid2 == next_dpid): #or (link.dpid1 == next_dpid and link.dpid2 == dpid):
-                                        print "linky.dpid1", linky.dpid1
-                                        print "linky.dpid2", linky.dpid2
-                                        print "linky.port1", linky.port1
-                                        print "linky.port2", linky.port2
-                                        print "src_ip", src_ip
-                                        print "dst_ip", dsts_ip[i]
+                                if dst_dpid == link.dpid2:
 
-                                        print "self.push_flow(%s, %s, %s, %s, %s, %s, %s)" % (linky.dpid1, src_ip, dsts_ip[i], pre_port, linky.port1, None, None)
-                                        self.push_flow(linky.dpid1, src_ip, dsts_ip[i], pre_port, linky.port1, None, None)
-                                        #self.push_flow(dpid_conn, src_dpid, dst_dpid, in_port, out_port, vlan_id, event)
+                                    print "self.push_flow(%s, %s, %s, %s, %s, %s, %s)" % (link.dpid2, src_ip, dsts_ip[i], link.port2, dst_port, None, None)
+                                    self.push_flow(link.dpid2, src_ip, dsts_ip[i], link.port2, dst_port, None, None)
+                                    #self.push_flow(dpid_conn, src_dpid, dst_dpid, in_port, out_port, vlan_id, event)
 
-                                        break
-                                break
-                    except:
+                                    break
 
-                        break
+                    else:
 
-            i += 1
+                        print "MIDDLE"
+                        print "i index", i
+                        try:
+                            next_dpid = path[path.index(dpid)+1]
+                            pre_dpid = path[path.index(dpid)-1]
+                            for linkx in links:
+                                if (linkx.dpid1 == pre_dpid and linkx.dpid2 == dpid):
+                                    pre_port = linkx.port2
+                                    print "pre_port = link.port2", pre_port
+
+                                    for linky in links:
+                                        if (linky.dpid1 == dpid and linky.dpid2 == next_dpid): #or (link.dpid1 == next_dpid and link.dpid2 == dpid):
+                                            print "linky.dpid1", linky.dpid1
+                                            print "linky.dpid2", linky.dpid2
+                                            print "linky.port1", linky.port1
+                                            print "linky.port2", linky.port2
+                                            print "src_ip", src_ip
+                                            print "dst_ip", dsts_ip[i]
+
+                                            print "self.push_flow(%s, %s, %s, %s, %s, %s, %s)" % (linky.dpid1, src_ip, dsts_ip[i], pre_port, linky.port1, None, None)
+                                            self.push_flow(linky.dpid1, src_ip, dsts_ip[i], pre_port, linky.port1, None, None)
+                                            #self.push_flow(dpid_conn, src_dpid, dst_dpid, in_port, out_port, vlan_id, event)
+
+                                            break
+                                    break
+                        except:
+
+                            break
+
+                i += 1
         return
 
     def push_flow(self, dpid_conn, src_ip, dst_ip, in_port, out_port, vlan_id=None, event=None):
