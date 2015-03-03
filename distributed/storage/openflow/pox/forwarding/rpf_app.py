@@ -280,6 +280,8 @@ class ResilientModule(object):
                             result = self.single_rpf(matrix, dpid_src, dsts_list[0], 3)
 
                             #self.route_flows(result)
+                            #self.route_flows(result, packet_match, srcs_ip, dsts_ip, vlan_id=None, event=None)
+
 
                         else:
                             print "dpid_src", dpid_src
