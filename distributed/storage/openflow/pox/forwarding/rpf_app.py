@@ -519,7 +519,6 @@ class ResilientModule(object):
 
                                 break
 
-
                     elif dpid == dst_dpid:     #last switch before dst
                         print "DESTINATION"
                         print "i index", i
