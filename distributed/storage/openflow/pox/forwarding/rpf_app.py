@@ -3,7 +3,7 @@
 from pox.core import core
 from pox.forwarding.rpf import ResilientPathFinder
 #from distributed.storage.openflow.pox.forwarding.rpf import ResilientPathFinder
-from MinervaDS.distributed.storage.src.config.config import DSConfig
+#from MinervaDS.distributed.storage.src.config.config import DSConfig
 from pox.forwarding.host_finder import Hostfinder
 #from distributed.storage.openflow.pox.forwarding.host_finder import Hostfinder
 from pox.forwarding.match_manager import Match, MatchManager
@@ -57,7 +57,7 @@ class ResilientModule(object):
 
         try:
             #self.magic_ip = DSConfig.MAGIC_IP
-            self.magic_ip = "192.168.1.254"
+            self.magic_ip = "10.10.100.254"
         except Exception as e:
             log.info(mcolors.FAIL+str(e)+mcolors.ENDC)
 
@@ -133,18 +133,22 @@ class ResilientModule(object):
         log.info("Handling PacketIn")
         eth_headers = event.parse() #Ethernet part of the packet L2
         packet = event.parsed
-        #log.info("PacketIn Correctly Parsed")
+        log.info("PacketIn Correctly Parsed")
 
         dpid = event.dpid
         in_port = event.port
 
-        if packet.type == 2054:     #ARP datagram type hex 0806
+        #print "eth_headers.next", eth_headers.next.__dict__
+        #print "eth_headers.next_dir", dir(eth_headers.next)
+        #print "eth_headers.next_type", eth_headers.next.eth_type       
+
+        if eth_headers.next.eth_type == 2054:     #ARP datagram type hex 0806; 2054
             print "ARP packet detected!"
             #print "packet", packet
             #print "header:", eth_headers
             print "header.next:", eth_headers.next
-
-            arp_params = eth_headers.next
+            print "header.next.next", eth_headers.next.next
+            arp_params = eth_headers.next.next
 
             hw_type = arp_params.hwtype     # arp.HW_TYPE_ETHERNET
             proto_type = arp_params.prototype  # arp.PROTO_TYPE_IP
@@ -277,6 +281,8 @@ class ResilientModule(object):
                             result = self.single_rpf(matrix, dpid_src, dsts_list[0], 3)
 
                             #self.route_flows(result)
+                            #self.route_packet(dpid, in_port, vlan_id, mpls_label, event)
+                            self.route_flows(result, packet_match, srcs_ip, dsts_ip, vlan_id=None, event=None)
 
                         else:
                             print "dpid_src", dpid_src
@@ -329,7 +335,7 @@ class ResilientModule(object):
 
 
                             #self.route_packet(dpid, in_port, vlan_id, mpls_label, event)
-                            #self.route_flows(final_result_list, packet_match, srcs_ip, dsts_ip, vlan_id=None, event=None)
+                            self.route_flows(final_result_list, packet_match, srcs_ip, dsts_ip, vlan_id=None, event=None)
 
 
 
@@ -425,7 +431,7 @@ class ResilientModule(object):
                     pos_map, pos_rmap = self.dict_mapper(pos, last, pos_map, pos_rmap)
                     #print "is all_dpids empty?", all_dpids
 
-            print "pos_map", pos_map, pos_rmap
+            #print "pos_map", pos_map, pos_rmap
 
         del all_dpids
         return pos_map, pos_rmap
@@ -480,86 +486,96 @@ class ResilientModule(object):
         i = 0
         for path in paths:
             print "path", path
-            for dpid in path:
-                print "dpid", dpid
-                print "dpid_index_in_path", path.index(dpid)
+            if len(path) == 1:
+                pass #TODO: one switch path           
 
-                if path.index(dpid) == 0 and dpid == src_dpid:  #First switch after src
-                    print "FIRST"
-                    print "i index", i
-                    next_dpid = path[path.index(dpid)+1]
-                    for link in links:
-                        if (link.dpid1 == dpid and link.dpid2 == next_dpid):
-                            print "link.dpid1", link.dpid1
-                            print "link.dpid2", link.dpid2
-                            print "link.port1", link.port1
-                            print "link.port2", link.port2
-                            print "src_ip", src_ip
-                            print "dst_ip", dsts_ip[i]
+            else:
+                dst_dpid, dst_port = self.get_host_port(dsts_ip[i])
+                print "dst_dpid - dst_port", dst_dpid, "-", dst_port
 
-                            print "self.push_flow(%s, %s, %s, %s, %s, %s, %s)" % (link.dpid1, src_ip, dsts_ip[i], src_port, link.port1, None, None)
-                            self.push_flow(link.dpid1, src_ip, dsts_ip[i], src_port, link.port1, None, None)
-                            #self.push_flow(dpid_conn, src_dpid, dst_dpid, in_port, out_port, vlan_id, event)
+            	for dpid in path:
+                    print "dpid", dpid
+                    print "dpid_index_in_path", path.index(dpid)
 
-                            break
+                    if dpid == src_dpid:  #First switch after src
+                        print "SOURCE"
+                        print "i index", i
+                        try:                       
+                            next_dpid = path[path.index(dpid)+1]
+                        except:
+                            next_dpid = path[path.index(dpid)-1]
 
+                        for link in links:
+                            if (link.dpid1 == dpid and link.dpid2 == next_dpid):
+                                print "link.dpid1", link.dpid1
+                                print "link.dpid2", link.dpid2
+                                print "link.port1", link.port1
+                                print "link.port2", link.port2
+                                print "src_ip", src_ip
+                                print "dst_ip", dsts_ip[i]
 
-                elif path.index(dpid) == (len(path)-1):     #last switch before dst
-                    print "LAST"
-                    print "i index", i
-                    for link in links:
-                        #print "path[(path.index(dpid))-1]", path[(path.index(dpid))-1]
-                        if (link.dpid1 == path[(path.index(dpid))-1] and link.dpid2 == dpid):
-                            print "link.dpid1", link.dpid1
-                            print "link.dpid2", link.dpid2
-                            print "link.port1", link.port1
-                            print "link.port2", link.port2
-                            print "src_ip", src_ip
-                            print "dst_ip", dsts_ip[i]
-
-                            dst_dpid, dst_port = self.get_host_port(dsts_ip[i])
-                            print "dst_dpid - dst_port", dst_dpid, "-", dst_port
-
-                            if dst_dpid == link.dpid2:
-
-                                print "self.push_flow(%s, %s, %s, %s, %s, %s, %s)" % (link.dpid2, src_ip, dsts_ip[i], link.port2, dst_port, None, None)
-                                self.push_flow(link.dpid2, src_ip, dsts_ip[i], link.port2, dst_port, None, None)
+                                print "self.push_flow(%s, %s, %s, %s, %s, %s, %s)" % (link.dpid1, src_ip, dsts_ip[i], src_port, link.port1, None, None)
+                                self.push_flow(link.dpid1, src_ip, dsts_ip[i], src_port, link.port1, None, None)
                                 #self.push_flow(dpid_conn, src_dpid, dst_dpid, in_port, out_port, vlan_id, event)
 
                                 break
 
-                else:
 
-                    print "MIDDLE"
-                    print "i index", i
-                    try:
-                        next_dpid = path[path.index(dpid)+1]
-                        pre_dpid = path[path.index(dpid)-1]
-                        for linkx in links:
-                            if (linkx.dpid1 == pre_dpid and linkx.dpid2 == dpid):
-                                pre_port = linkx.port2
-                                print "pre_port = link.port2", pre_port
+                    elif dpid == dst_dpid:     #last switch before dst
+                        print "DESTINATION"
+                        print "i index", i
+                        for link in links:
+                            #print "path[(path.index(dpid))-1]", path[(path.index(dpid))-1]
+                            if (link.dpid1 == path[(path.index(dpid))-1] and link.dpid2 == dpid):
+                                print "link.dpid1", link.dpid1
+                                print "link.dpid2", link.dpid2
+                                print "link.port1", link.port1
+                                print "link.port2", link.port2
+                                print "src_ip", src_ip
+                                print "dst_ip", dsts_ip[i]
 
-                                for linky in links:
-                                    if (linky.dpid1 == dpid and linky.dpid2 == next_dpid): #or (link.dpid1 == next_dpid and link.dpid2 == dpid):
-                                        print "linky.dpid1", linky.dpid1
-                                        print "linky.dpid2", linky.dpid2
-                                        print "linky.port1", linky.port1
-                                        print "linky.port2", linky.port2
-                                        print "src_ip", src_ip
-                                        print "dst_ip", dsts_ip[i]
+                                dst_dpid, dst_port = self.get_host_port(dsts_ip[i])
+                                print "dst_dpid - dst_port", dst_dpid, "-", dst_port
 
-                                        print "self.push_flow(%s, %s, %s, %s, %s, %s, %s)" % (linky.dpid1, src_ip, dsts_ip[i], pre_port, linky.port1, None, None)
-                                        self.push_flow(linky.dpid1, src_ip, dsts_ip[i], pre_port, linky.port1, None, None)
-                                        #self.push_flow(dpid_conn, src_dpid, dst_dpid, in_port, out_port, vlan_id, event)
+                                if dst_dpid == link.dpid2:
+                                    print "self.push_flow(%s, %s, %s, %s, %s, %s, %s)" % (link.dpid2, src_ip, dsts_ip[i], link.port2, dst_port, None, None)
+                                    self.push_flow(link.dpid2, src_ip, dsts_ip[i], link.port2, dst_port, None, None)
+                                    #self.push_flow(dpid_conn, src_dpid, dst_dpid, in_port, out_port, vlan_id, event)
 
-                                        break
-                                break
-                    except:
+                                    break
 
-                        break
+                    else:
 
-            i += 1
+                        print "MIDDLE"
+                        print "i index", i
+                        try:
+                            next_dpid = path[path.index(dpid)+1]
+                            pre_dpid = path[path.index(dpid)-1]
+                            for linkx in links:
+                                if (linkx.dpid1 == pre_dpid and linkx.dpid2 == dpid):
+                                    pre_port = linkx.port2
+                                    print "pre_port = link.port2", pre_port
+
+                                    for linky in links:
+                                        if (linky.dpid1 == dpid and linky.dpid2 == next_dpid): #or (link.dpid1 == next_dpid and link.dpid2 == dpid):
+                                            print "linky.dpid1", linky.dpid1
+                                            print "linky.dpid2", linky.dpid2
+                                            print "linky.port1", linky.port1
+                                            print "linky.port2", linky.port2
+                                            print "src_ip", src_ip
+                                            print "dst_ip", dsts_ip[i]
+
+                                            print "self.push_flow(%s, %s, %s, %s, %s, %s, %s)" % (linky.dpid1, src_ip, dsts_ip[i], pre_port, linky.port1, None, None)
+                                            self.push_flow(linky.dpid1, src_ip, dsts_ip[i], pre_port, linky.port1, None, None)
+                                            #self.push_flow(dpid_conn, src_dpid, dst_dpid, in_port, out_port, vlan_id, event)
+
+                                            break
+                                    break
+                        except:
+
+                            break
+
+                i += 1
         return
 
     def push_flow(self, dpid_conn, src_ip, dst_ip, in_port, out_port, vlan_id=None, event=None):
@@ -704,7 +720,7 @@ class ResilientModule(object):
 
         return A_arrays, B_arrays, C_arrays
 
-    def matrixer(self, arrays):
+    def matrixer(self, arrays, index):
         matrix_array = numpy.matrix(arrays)
         print "matrix_array", matrix_array
 
@@ -752,9 +768,23 @@ class ResilientModule(object):
             while array_list.count(i) > 1:
                 array_list.remove(i)
         """
-
+ 
         for i in final:
-            array_list_2.append(i[1:len(i)])
+            nw_list = list()
+            pos = 0
+            for j in i:
+                if pos != index:
+                    nw_list.append(j)
+                    pos += 1
+                else:
+                    pos += 1
+
+            array_list_2.append(nw_list)
+
+        #array_list_2.append(i[1:len(i)])
+           
+        mat = numpy.matrix(array_list_2)
+        return mat   
 
         #pprint.pprint(array_list)
         pprint.pprint(array_list_2)
@@ -763,7 +793,7 @@ class ResilientModule(object):
         ##
         # creating matrix
 
-        mat = numpy.matrix(array_list_2)
+        mat = numpy.matrix(final)
         return mat
 
     def single_rpf(self,  dpids, src, dst, n_flows=None):
@@ -952,6 +982,10 @@ class ResilientModule(object):
         print "ALL_DPIDS", dpids.keys()
 
         print "dpids_matrix", dpids
+        print "dpid source", src
+
+        src_index = dpids.keys().index(src)
+        print "src-INDEX", src_index
 
         A_array, B_array, C_array = self.paths_to_arrays(paths, dpids)
 
@@ -964,9 +998,9 @@ class ResilientModule(object):
 
         #Create matrixes
 
-        A_matrix = self.matrixer(A_array)
-        B_matrix = self.matrixer(B_array)
-        C_matrix = self.matrixer(C_array)
+        A_matrix = self.matrixer(A_array, src_index)
+        B_matrix = self.matrixer(B_array, src_index)
+        C_matrix = self.matrixer(C_array, src_index)
 
         print "MATRIX A", A_matrix
         print "MATRIX B", B_matrix
@@ -975,8 +1009,8 @@ class ResilientModule(object):
         print "BuC Array", B_array+C_array
         print "AuC Array", A_array+C_array
 
-        MAT_BuC = self.matrixer(B_array+C_array)
-        MAT_AuC = self.matrixer(A_array+C_array)
+        MAT_BuC = self.matrixer(B_array+C_array, src_index)
+        MAT_AuC = self.matrixer(A_array+C_array, src_index)
 
         print "MAT_BuC", MAT_BuC
         print "MAT_AuC", MAT_AuC
@@ -985,8 +1019,10 @@ class ResilientModule(object):
         print "Transposed MAT_BuC", MAT_BuC.T
         print "Transposed MAT_AuC", MAT_AuC.T
 
-        orthogonal_BuC = A_matrix.dot(MAT_BuC.T)
-        orthogonal_AuC = B_matrix.dot(MAT_AuC.T)
+        #orthogonal_BuC = A_matrix.dot(MAT_BuC.T)
+        #orthogonal_AuC = B_matrix.dot(MAT_AuC.T)
+        orthogonal_BuC = A_matrix * (MAT_BuC.T)
+        orthogonal_AuC = B_matrix * (MAT_AuC.T)
 
         print "Orthogonal BuC: ", orthogonal_BuC
         print "Orthogonal AuC: ", orthogonal_AuC
