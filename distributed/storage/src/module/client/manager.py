@@ -136,9 +136,13 @@ class ClientManager:
         chunk_c = chunk_list.pop(0)
         del chunk_list
 
-        result_a = channel_a.write(chunk_a.get("value"), servers.get("file_id"),chunk_a.get("type"))
-        result_b = channel_b.write(chunk_b.get("value"), servers.get("file_id"),chunk_b.get("type"))
-        result_c = channel_c.write(chunk_c.get("value"), servers.get("file_id"),chunk_c.get("type"))
+        ThreadManager.start_method_in_new_thread(channel_a.write, [chunk_a.get("value"), servers.get("file_id"),chunk_a.get("type")])
+        ThreadManager.start_method_in_new_thread(channel_b.write, [chunk_b.get("value"), servers.get("file_id"),chunk_a.get("type")])
+        ThreadManager.start_method_in_new_thread(channel_c.write, [chunk_c.get("value"), servers.get("file_id"),chunk_a.get("type")])
+
+        #result_a = channel_a.write(chunk_a.get("value"), servers.get("file_id"),chunk_a.get("type"))
+        #result_b = channel_b.write(chunk_b.get("value"), servers.get("file_id"),chunk_b.get("type"))
+        #result_c = channel_c.write(chunk_c.get("value"), servers.get("file_id"),chunk_c.get("type"))
 
         return True, servers.get("file_id")
 
