@@ -219,7 +219,7 @@ class ResilientModule(object):
                 packet_match.l3_src_port = None
                 packet_match.l3_dst_port = None
 
-                log.warning(" New packet_match")
+                log.warning(" --> New packet_match")
 
                 self.packet_holder.check_in(packet_match)
 
@@ -246,7 +246,7 @@ class ResilientModule(object):
                         #print "dsts", dsts
 
                         for match_item in dsts:
-                            print mcolors.FAIL+"!!!!!!!!!PACKET_READY!!!!!!!!!!!!"+mcolors.ENDC
+                            print mcolors.FAIL+"-------PACKET_MATCH READY-------"+mcolors.ENDC
                             dsts_ip.append(match_item.get_dst_ip())
 
                     print "src_ip", srcs_ip
@@ -285,7 +285,7 @@ class ResilientModule(object):
                             self.route_flows(result, packet_match, srcs_ip, dsts_ip, vlan_id=None, event=None)
 
                         else:
-                            print "dpid_src", dpid_src
+                            #print "dpid_src", dpid_src
                             #print "dpid_dst", dsts_list
                             print "dpid_dst_dict", dsts_dict
 
@@ -296,26 +296,26 @@ class ResilientModule(object):
                             with threading.Lock():
                                 res = self.single_rpf(matrix, dpid_src, dsts_dict[dsts_ip[0]], 3)
                             print "res1", res
-                            time.sleep(1)
+                            #time.sleep(1)
 
                             result_list.append(res)
                             #print "---------------------TOPO", matrix
                             with threading.Lock():
                                 res = self.single_rpf(matrix, dpid_src, dsts_dict[dsts_ip[1]], 3)
                             print "res2", res
-                            time.sleep(1)
+                            #time.sleep(1)
 
                             result_list.append(res)
                             #print "---------------------TOPO", matrix
                             with threading.Lock():
                                 res = self.single_rpf(matrix, dpid_src, dsts_dict[dsts_ip[2]], 3)
                             print "res3", res
-                            time.sleep(1)
+                            #time.sleep(1)
 
                             result_list.append(res)
 
-                            print "!!!!!!!!!!!!!!!!!!!!!!!!final", result_list
-                            print "!!!!!!!!!!!!!!!!!!!!!!!!", dsts_dict
+                            print "...............final", result_list
+                            print "....................", dsts_dict
 
                             print mcolors.FAIL+"!!!!!!!!!MULTI STARTS HERE!!!!!!!!!!!!"+mcolors.ENDC
 
@@ -404,6 +404,11 @@ class ResilientModule(object):
         all_dpids.remove(src)
         pos += 1
 
+	if src == dst:
+            print "src == dst", src, dst
+            return pos_map, pos_rmap
+
+
         while all_dpids:
             for dpid in all_dpids:
 
@@ -424,8 +429,10 @@ class ResilientModule(object):
                     pos += 1
 
             if len(all_dpids) == 1:
+                #print "(dst)", dst
                 #print "len(all_dpids)==1"
                 #print "all_dpids", all_dpids
+     
                 if all_dpids.index(dst) == 0:
                     last = all_dpids.pop()
                     pos_map, pos_rmap = self.dict_mapper(pos, last, pos_map, pos_rmap)
@@ -466,7 +473,7 @@ class ResilientModule(object):
             while 0 in path:
                 path.remove(0)
 
-        print "paths", paths
+        #print "paths", paths
         return paths
 
     def route_flows(self, paths, matching, src_ip=None, dsts_ip=None, vlan_id=None, event=None):
@@ -474,32 +481,32 @@ class ResilientModule(object):
         (final_result_list, packet_match, srcs_ip, dsts_ip)'''
         print mcolors.FAIL+"-------->!!!!!!!!!ROUTE_FLOWS HERE!!!!!!!!!!!!<--------"+mcolors.ENDC
 
-        print "src_ip", src_ip
+        #print "src_ip", src_ip
 
         src_dpid, src_port = self.get_host_port(src_ip)
 
-        print "src_dpid - src_port", src_dpid, "-", src_port
+        #print "src_dpid - src_port", src_dpid, "-", src_port
 
         links = core.openflow_discovery.adjacency.keys()
-        print "links", links
+        #print "links", links
 
         i = 0
         for path in paths:
-            print "path", path
+            #print "path", path
             if len(path) == 1:
                 pass #TODO: one switch path           
 
             else:
                 dst_dpid, dst_port = self.get_host_port(dsts_ip[i])
-                print "dst_dpid - dst_port", dst_dpid, "-", dst_port
+                #print "dst_dpid - dst_port", dst_dpid, "-", dst_port
 
             	for dpid in path:
-                    print "dpid", dpid
-                    print "dpid_index_in_path", path.index(dpid)
+                    #print "dpid", dpid
+                    #print "dpid_index_in_path", path.index(dpid)
 
                     if dpid == src_dpid:  #First switch after src
-                        print "SOURCE"
-                        print "i index", i
+                        #print "SOURCE"
+                        #print "i index", i
                         try:                       
                             next_dpid = path[path.index(dpid)+1]
                         except:
@@ -507,12 +514,12 @@ class ResilientModule(object):
 
                         for link in links:
                             if (link.dpid1 == dpid and link.dpid2 == next_dpid):
-                                print "link.dpid1", link.dpid1
-                                print "link.dpid2", link.dpid2
-                                print "link.port1", link.port1
-                                print "link.port2", link.port2
-                                print "src_ip", src_ip
-                                print "dst_ip", dsts_ip[i]
+                                #print "link.dpid1", link.dpid1
+                                #print "link.dpid2", link.dpid2
+                                #print "link.port1", link.port1
+                                #print "link.port2", link.port2
+                                #print "src_ip", src_ip
+                                #print "dst_ip", dsts_ip[i]
 
                                 print "self.push_flow(%s, %s, %s, %s, %s, %s, %s)" % (link.dpid1, src_ip, dsts_ip[i], src_port, link.port1, None, None)
                                 self.push_flow(link.dpid1, src_ip, dsts_ip[i], src_port, link.port1, None, None)
@@ -522,20 +529,20 @@ class ResilientModule(object):
 
 
                     elif dpid == dst_dpid:     #last switch before dst
-                        print "DESTINATION"
-                        print "i index", i
+                        #print "DESTINATION"
+                        #print "i index", i
                         for link in links:
                             #print "path[(path.index(dpid))-1]", path[(path.index(dpid))-1]
                             if (link.dpid1 == path[(path.index(dpid))-1] and link.dpid2 == dpid):
-                                print "link.dpid1", link.dpid1
-                                print "link.dpid2", link.dpid2
-                                print "link.port1", link.port1
-                                print "link.port2", link.port2
-                                print "src_ip", src_ip
-                                print "dst_ip", dsts_ip[i]
+                                #print "link.dpid1", link.dpid1
+                                #print "link.dpid2", link.dpid2
+                                #print "link.port1", link.port1
+                                #print "link.port2", link.port2
+                                #print "src_ip", src_ip
+                                #print "dst_ip", dsts_ip[i]
 
                                 dst_dpid, dst_port = self.get_host_port(dsts_ip[i])
-                                print "dst_dpid - dst_port", dst_dpid, "-", dst_port
+                                #print "dst_dpid - dst_port", dst_dpid, "-", dst_port
 
                                 if dst_dpid == link.dpid2:
                                     print "self.push_flow(%s, %s, %s, %s, %s, %s, %s)" % (link.dpid2, src_ip, dsts_ip[i], link.port2, dst_port, None, None)
@@ -546,24 +553,24 @@ class ResilientModule(object):
 
                     else:
 
-                        print "MIDDLE"
-                        print "i index", i
+                        #print "MIDDLE"
+                        #print "i index", i
                         try:
                             next_dpid = path[path.index(dpid)+1]
                             pre_dpid = path[path.index(dpid)-1]
                             for linkx in links:
                                 if (linkx.dpid1 == pre_dpid and linkx.dpid2 == dpid):
                                     pre_port = linkx.port2
-                                    print "pre_port = link.port2", pre_port
+                                    #print "pre_port = link.port2", pre_port
 
                                     for linky in links:
                                         if (linky.dpid1 == dpid and linky.dpid2 == next_dpid): #or (link.dpid1 == next_dpid and link.dpid2 == dpid):
-                                            print "linky.dpid1", linky.dpid1
-                                            print "linky.dpid2", linky.dpid2
-                                            print "linky.port1", linky.port1
-                                            print "linky.port2", linky.port2
-                                            print "src_ip", src_ip
-                                            print "dst_ip", dsts_ip[i]
+                                            #print "linky.dpid1", linky.dpid1
+                                            #print "linky.dpid2", linky.dpid2
+                                            #print "linky.port1", linky.port1
+                                            #print "linky.port2", linky.port2
+                                            #print "src_ip", src_ip
+                                            #print "dst_ip", dsts_ip[i]
 
                                             print "self.push_flow(%s, %s, %s, %s, %s, %s, %s)" % (linky.dpid1, src_ip, dsts_ip[i], pre_port, linky.port1, None, None)
                                             self.push_flow(linky.dpid1, src_ip, dsts_ip[i], pre_port, linky.port1, None, None)
@@ -595,9 +602,9 @@ class ResilientModule(object):
         msg.actions.append(of.ofp_action_output(port=out_port))
         # msg.actions.append(of.ofp_action_output(port=of.OFPP_CONTROLLER))
 
-        print "DPID_CONN", dpid_conn
-        print "CONN_DPIDS", self.conn_dpids
-        print "CONN_DPIDS[dpid_conn]", self.conn_dpids[dpid_conn]
+        #print "DPID_CONN", dpid_conn
+        #print "CONN_DPIDS", self.conn_dpids
+        #print "CONN_DPIDS[dpid_conn]", self.conn_dpids[dpid_conn]
 
         print mcolors.FAIL+"----------->Forward-IP-rule----------->"+mcolors.ENDC
         connection = self.conn_dpids[dpid_conn]
@@ -666,24 +673,24 @@ class ResilientModule(object):
         #Translate all paths to 0-1 format following a common pattern
 
         all_dpids = self.host_finder.get_dpids()
-        print "dpids.keys", dpids.keys()
-        print "dpids_matrix", dpids
+        #print "dpids.keys", dpids.keys()
+        #print "dpids_matrix", dpids
         pos = 0
 
         for path_set in paths:
             arrays = list()
 
             for path in path_set:
-                print "PATH: ", path
+                #print "PATH: ", path
 
                 conn_row = path
 
-                print "conn_row", conn_row  #[2, 4, 5]
-                print "all_dpids", all_dpids
+                #print "conn_row", conn_row  #[2, 4, 5]
+                #print "all_dpids", all_dpids
 
                 not_conn = list(set(all_dpids)-set(conn_row))
 
-                print "not_connected_set", not_conn
+                #print "not_connected_set", not_conn
 
                 conn_row_array = numpy.array(conn_row)
                 #print "conn_row_array", conn_row_array  #[2 4 5]
@@ -696,20 +703,20 @@ class ResilientModule(object):
 
                 # ITEMS in difference:
                 for item in not_conn:
-                    print "item, key", item, path
+                    #print "item, key", item, path
                     # get position from pos_dpid_map
                     #item_pos = pos_dpid_map.values().index(item)
                     item_pos = dpids.keys().index(item)
-                    print "item, item_position", item, item_pos
+                    #print "item, item_position", item, item_pos
                     # Add '0' in place of no dpid link
                     conn_row_list.insert(item_pos, 0)
-                    print "current_conn_row_list", conn_row_list
+                    #print "current_conn_row_list", conn_row_list
 
                 #print "conn_row_list", conn_row_list
                 arrays.append(numpy.array(conn_row_list))
                 #print "arrays.append(numpy.array(conn_row))", arrays
             pos += 1
-            print "POSITION", pos
+            #print "POSITION", pos
 
             if pos == 1:
                 A_arrays = arrays
@@ -722,7 +729,7 @@ class ResilientModule(object):
 
     def matrixer(self, arrays, index):
         matrix_array = numpy.matrix(arrays)
-        print "matrix_array", matrix_array
+        #print "matrix_array", matrix_array
 
         path_row_list = list()
         for a in arrays:
@@ -787,7 +794,7 @@ class ResilientModule(object):
         return mat   
 
         #pprint.pprint(array_list)
-        pprint.pprint(array_list_2)
+        #pprint.pprint(array_list_2)
 
         #And then, the magic of multi RPF starts below!
         ##
