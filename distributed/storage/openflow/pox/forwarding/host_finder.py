@@ -116,14 +116,14 @@ class Link(namedtuple("LinkBase", ("dpid1", "port1", "dpid2", "port2"))):
             return "Link(dpid1=%s,port1=%s, dpid2=%s,port2=%s)" % (self.dpid1,
             self.port1, self.dpid2, self.port2)
 
-class Host(namedtuple("LinkBase", ("ip", "mac", "dpid", "port"))):
+class Host(namedtuple("HostBase", ("ip", "mac", "dpid", "port", "type"))):
         @property
         def end(self):
-            return (self[0], self[1], self[2], self[3])
+            return (self[0], self[1], self[2], self[3], self[4])
 
         def __str__(self):
             return "%s -> %s.%s" % (self[0], dpid_to_str(self[2]), self[3])
 
         def __repr__(self):
-            return "Host(ip=%s, mac=%s, dpid=%s, port=%s)" % (self.ip,
-            self.mac, self.dpid, self.port)
+            return "Host(ip=%s, mac=%s, dpid=%s, port=%s, type=%s)" % (self.ip,
+            self.mac, self.dpid, self.port, self.type)

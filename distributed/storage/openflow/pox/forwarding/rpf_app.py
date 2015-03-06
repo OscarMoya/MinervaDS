@@ -58,7 +58,8 @@ class ResilientModule(object):
 
         try:
             #self.magic_ip = DSConfig.MAGIC_IP
-            self.magic_ip = "192.168.1.254"
+            self.cl_magic_ip = "192.168.1.254"
+            self.sv_magic_ip = "192.168.1.253"
         except Exception as e:
             log.info(mcolors.FAIL+str(e)+mcolors.ENDC)
 
@@ -122,6 +123,15 @@ class ResilientModule(object):
         else:
             return False
 
+    def match_host_type(self, ip):
+        for host in self.host_finder.hosts:
+            if host.ip == ip and host.type == 'client':
+                return Match(match_type="client")
+            elif host.ip == ip and host.type == 'server':
+                return Match(match_type="server")
+            else:
+                raise Exception("No match available")
+
     def _handle_ConnectionUp(self, event):
         """
         Handle event with Controller Manager
@@ -166,7 +176,7 @@ class ResilientModule(object):
             print "in_port", in_port
             """
 
-            if dst_ip == self.magic_ip:
+            if dst_ip == self.cl_magic_ip or dst_ip == self.sv_magic_ip:
                 #if dst_ip:
                 #print "HOSTS_LIST", self.host_finder.hosts
                 found = self.host_search(src_ip)
@@ -194,17 +204,23 @@ class ResilientModule(object):
 
                 if not found:
                     log.info(' --> Received packet-in event packet from unknown host')
-                    self.host_finder.add_host(src_ip, src_mac, dpid, in_port)
+
+                    if dst_ip == self.cl_magic_ip:
+                        self.host_finder.add_host(src_ip, src_mac, dpid, in_port, type='client')
+                    elif dst_ip == self.sv_magic_ip:
+                        self.host_finder.add_host(src_ip, src_mac, dpid, in_port, type='server')
 
                 else:
                     log.info(' --> Received packet-in event packet from already known host')    #self.host_finder.hosts
 
-            ###########################################################################
+                ###########################################################################
+
             else:   # dst_ip != self.magic_ip:
                 #if dst_ip:
+
                 log.warning(" Couldn't find magic_ip in packet-in event packet")
 
-                packet_match = Match()
+                packet_match = self.match_host_type(src_ip)
 
                 packet_match.in_port = in_port
                 packet_match.src_mac = src_mac
@@ -295,21 +311,21 @@ class ResilientModule(object):
                             with threading.Lock():
                                 res = self.single_rpf(matrix, dpid_src, dsts_dict[dsts_ip[0]], 3)
                             print "res1", res
-                            time.sleep(1)
+                            #time.sleep(1)
 
                             result_list.append(res)
                             #print "---------------------TOPO", matrix
                             with threading.Lock():
                                 res = self.single_rpf(matrix, dpid_src, dsts_dict[dsts_ip[1]], 3)
                             print "res2", res
-                            time.sleep(1)
+                            #time.sleep(1)
 
                             result_list.append(res)
                             #print "---------------------TOPO", matrix
                             with threading.Lock():
                                 res = self.single_rpf(matrix, dpid_src, dsts_dict[dsts_ip[2]], 3)
                             print "res3", res
-                            time.sleep(1)
+                            #time.sleep(1)
 
                             result_list.append(res)
 
