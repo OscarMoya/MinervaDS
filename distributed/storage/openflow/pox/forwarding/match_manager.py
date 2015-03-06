@@ -28,7 +28,7 @@ class MatchManager:
 
 
 class Match:
-    def __init__(self):
+    def __init__(self, match_type="client"):
         self.in_port = None
         self.src_mac = None
         self.dst_mac = None
@@ -40,8 +40,11 @@ class Match:
         self.ip_tos = None
         self.l3_src_port = None
         self.l3_dst_port = None
-
-        self.__root_headers = {"in_port": self.get_in_port, "src_mac": self.get_src_mac, "eth_type": self.get_eth_type, "vlan_id": self.get_vlan_id, "src_ip": self.get_src_ip}
+        
+        if match_type == "client":
+            self.__root_headers = {"in_port": self.get_in_port, "src_mac": self.get_src_mac, "eth_type": self.get_eth_type, "vlan_id": self.get_vlan_id, "src_ip": self.get_src_ip}
+        else:
+            self.__root_headers = {"in_port": self.get_in_port, "src_mac": self.get_src_mac, "eth_type": self.get_eth_type, "vlan_id": self.get_vlan_id, "dst_ip": self.get_dst_ip}
 
     def get_root(self):
         root = Match()
