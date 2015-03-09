@@ -1,6 +1,7 @@
 import sys
 import os
 import random
+import subprocess
 
 def prepare_environment():
     path = os.path.abspath(__file__)
@@ -10,6 +11,15 @@ def prepare_environment():
     path = "/".join(path[0:4])
     print "path", path
     sys.path.append(path)
+
+    #Cleaning DBs
+    command = "rm -rf clientfile"
+    try:
+            subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    except:
+            subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
+
+    return True
 
 def start_client(mgmt_ip, mgmt_port, data_ip, data_port):
 
