@@ -152,28 +152,56 @@ class ResilientModule(object):
         eth_headers = event.parse() #Ethernet part of the packet L2
         packet = event.parsed
         log.info("PacketIn Correctly Parsed")
+        
+        print "eth_headers.next.id", eth_headers.next.id
+        if eth_headers.next.id != 1550:
+            print mcolors.FAIL+"INTRUDER VLAN TAG"+mcolors.ENDC
+            return
 
         dpid = event.dpid
         in_port = event.port
         
+        print "DPID - IN_PORT", dpid, in_port
+        #print "packet", packet
+        #print "eth_headers", eth_headers
         #print "eth_headers.next", eth_headers.next.__dict__
         #print "eth_headers.next_dir", dir(eth_headers.next)
-        print "eth_headers.next_type", eth_headers.next.eth_type       
+        #print "eth_headers.next_type", eth_headers.next.eth_type       
 
         if eth_headers.next.eth_type == 2054 or eth_headers.next.eth_type == 2048:     #ARP datagram type hex 0806; 2054
-            print "ARP packet detected!"
+            #print "ARP packet detected!"
             #print "packet", packet
             #print "header:", eth_headers
-            print "header.next:", eth_headers.next
-            print "header.next.next", eth_headers.next.next
-            arp_params = eth_headers.next.next
+            #print "header.next:", eth_headers.next
+            #print "header.next.next", eth_headers.next.next
+            
+            if eth_headers.next.eth_type == 2048:
+                print "IP packet detected"
+                #print "eth_headers", eth_headers.__dict__
+                #print "eth_headers.next", eth_headers.next.__dict__
+                #print "eth_headers.next.next", eth_headers.next.next.__dict__
+                #print "eth_headers.next.next_dir", dir(eth_headers.next.next)
 
-            hw_type = arp_params.hwtype     # arp.HW_TYPE_ETHERNET
-            proto_type = arp_params.prototype  # arp.PROTO_TYPE_IP
-            src_mac = arp_params.hwsrc      # ETHER_ANY
-            dst_mac = arp_params.hwdst      # ETHER_ANY
-            src_ip = arp_params.protosrc   # IP_ANY
-            dst_ip = arp_params.protodst
+                ip_params = eth_headers.next.next
+
+                #hw_type = arp_params.hwtype     # arp.HW_TYPE_ETHERNET
+                #proto_type = arp_params.prototype  # arp.PROTO_TYPE_IP
+                src_mac = eth_headers.src      # ETHER_ANY
+                dst_mac = eth_headers.dst      # ETHER_ANY
+                src_ip = ip_params.srcip       # IP_ANY
+                dst_ip = ip_params.dstip
+                
+
+            else:
+                print "ARP packet detected!"
+                arp_params = eth_headers.next.next
+
+                #hw_type = arp_params.hwtype     # arp.HW_TYPE_ETHERNET
+                #proto_type = arp_params.prototype  # arp.PROTO_TYPE_IP
+                src_mac = arp_params.hwsrc      # ETHER_ANY
+                dst_mac = arp_params.hwdst      # ETHER_ANY
+                src_ip = arp_params.protosrc   # IP_ANY
+                dst_ip = arp_params.protodst
 
             """
             print "hw_type", hw_type        # Hardware type, Ethernet = 1
@@ -236,7 +264,7 @@ class ResilientModule(object):
                     print mcolors.OKGREEN+str(in_port)+mcolors.ENDC 
                     packet_match.src_mac = src_mac
                     packet_match.dst_mac = dst_mac
-                    packet_match.eth_type = hw_type
+                    #packet_match.eth_type = hw_type
                     packet_match.vlan_id = None
                     packet_match.vlan_priority = None
                     packet_match.src_ip = src_ip
@@ -392,22 +420,15 @@ class ResilientModule(object):
 
             #self._update_topology()
             #vlan_headers = eth_headers.next #VLAN part of the Packet L2
-            #mpls_headers = vlan_headers.next #MPLS part of the packet L2.5
-
             """
             vlan_id = vlan_headers.id
             if vlan_id not in [4007,4008,4009]:
                 return
-            try:
-                mpls_label = mpls_headers.label
-            except:
-                mpls_label = None
             """
-
             #src_mac = packet.src
             #dst_mac = packet.dst
-
             """
+
             print "pkt type", packet.type
 
             print "src_mac", src_mac
