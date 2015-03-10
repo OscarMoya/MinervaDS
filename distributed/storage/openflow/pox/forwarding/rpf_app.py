@@ -125,14 +125,16 @@ class ResilientModule(object):
 
     def match_host_type(self, ip):
         for host in self.host_finder.hosts:
-            print "host", host
-            print "host.ip", host.ip            
-            print "ip", ip
-            print "host.type", host.type
+            #print "host", host
+            #print "host.ip", host.ip            
+            #print "ip", ip
+            #print "host.type", host.type
 
             if host.ip == ip and host.type == 'client':
+                print mcolors.OKGREEN+"ip -> host.ip"+str(ip)+" "+str(host.ip)+" "+str(host.type)+mcolors.ENDC
                 return Match("client")
             elif host.ip == ip and host.type == 'server':
+                print mcolors.OKGREEN+"ip -> host.ip"+str(ip)+" "+str(host.ip)+" "+str(host.type)+mcolors.ENDC
                 return Match("server")
         
         raise Exception("No match available")    
@@ -153,12 +155,12 @@ class ResilientModule(object):
 
         dpid = event.dpid
         in_port = event.port
-
+        
         #print "eth_headers.next", eth_headers.next.__dict__
         #print "eth_headers.next_dir", dir(eth_headers.next)
-        #print "eth_headers.next_type", eth_headers.next.eth_type       
+        print "eth_headers.next_type", eth_headers.next.eth_type       
 
-        if eth_headers.next.eth_type == 2054:     #ARP datagram type hex 0806; 2054
+        if eth_headers.next.eth_type == 2054 or eth_headers.next.eth_type == 2048:     #ARP datagram type hex 0806; 2054
             print "ARP packet detected!"
             #print "packet", packet
             #print "header:", eth_headers
@@ -227,24 +229,47 @@ class ResilientModule(object):
                 log.warning(" Couldn't find magic_ip in packet-in event packet")
 
                 packet_match = self.match_host_type(src_ip)
+               
+                if packet_match.match_type == "client":
+                    print "packet_match of client"
+                    packet_match.in_port = in_port
+                    print mcolors.OKGREEN+str(in_port)+mcolors.ENDC 
+                    packet_match.src_mac = src_mac
+                    packet_match.dst_mac = dst_mac
+                    packet_match.eth_type = hw_type
+                    packet_match.vlan_id = None
+                    packet_match.vlan_priority = None
+                    packet_match.src_ip = src_ip
+                    print mcolors.OKGREEN+str(src_ip)+mcolors.ENDC
+                    packet_match.dst_ip = dst_ip
+                    print mcolors.OKGREEN+str(dst_ip)+mcolors.ENDC
+                    packet_match.ip_tos = None
+                    packet_match.l3_src_port = None
+                    packet_match.l3_dst_port = None
 
-                packet_match.in_port = in_port
-                packet_match.src_mac = src_mac
-                packet_match.dst_mac = dst_mac
-                packet_match.eth_type = hw_type
-                packet_match.vlan_id = None
-                packet_match.vlan_priority = None
-                packet_match.src_ip = src_ip
-                packet_match.dst_ip = dst_ip
-                packet_match.ip_tos = None
-                packet_match.l3_src_port = None
-                packet_match.l3_dst_port = None
+                else:
+                    print "packet_match of server"
+                    #packet_match.in_port = in_port
+                    print "in_port", mcolors.OKGREEN+str(in_port)+mcolors.ENDC
+                    #packet_match.src_mac = dst_mac
+                    #packet_match.dst_mac = src_mac
+                    #packet_match.eth_type = hw_type
+                    packet_match.vlan_id = 1550
+                    #packet_match.vlan_priority = None
+                    packet_match.src_ip = dst_ip
+                    print "src_ip", mcolors.OKGREEN+str(dst_ip)+mcolors.ENDC
+                    packet_match.dst_ip = src_ip
+                    print "dst_ip", mcolors.OKGREEN+str(src_ip)+mcolors.ENDC
+                    #packet_match.ip_tos = None
+                    #packet_match.l3_src_port = None
+                    #packet_match.l3_dst_port = None
+                
 
                 log.warning(" --> New packet_match")
 
                 self.packet_holder.check_in(packet_match)
-
-                #print "matches", self.packet_holder.matches
+                
+                print "matches", self.packet_holder.matches
 
                 pkt_ready = self.packet_holder.take_off() #list of lists
 
@@ -617,7 +642,7 @@ class ResilientModule(object):
 
         # dl_vlan=vlan_id,
         # Use idle and/or hard timeouts to help cleaning the table
-        msg.idle_timeout = 200
+        msg.idle_timeout = 10
         msg.hard_timeout = 0  #In order to avoid unnecessary messages between the switches and the controller
         msg.priority = 40
         msg.actions.append(of.ofp_action_output(port=out_port))
@@ -639,7 +664,7 @@ class ResilientModule(object):
                                  nw_dst=src_ip)
 
         # Use idle and/or hard timeouts to help cleaning the table
-        msg.idle_timeout = 200
+        msg.idle_timeout = 10
         msg.hard_timeout = 0
         msg.priority = 40
         msg.actions.append(of.ofp_action_output(port=in_port))
@@ -658,7 +683,7 @@ class ResilientModule(object):
 
         # dl_vlan=vlan_id,
 
-        msg.idle_timeout = 200
+        msg.idle_timeout = 10
         msg.hard_timeout = 0
         msg.priority = 40
         msg.actions.append(of.ofp_action_output(port=out_port))
@@ -674,7 +699,7 @@ class ResilientModule(object):
                                  nw_src=dst_ip,
                                  nw_dst=src_ip)
 
-        msg.idle_timeout = 200
+        msg.idle_timeout = 10
         msg.hard_timeout = 0
         msg.priority = 40
         msg.actions.append(of.ofp_action_output(port=in_port))
