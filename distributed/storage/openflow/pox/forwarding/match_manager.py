@@ -6,7 +6,7 @@ class MatchManager:
 
     def check_in(self, match):
         root = match.get_root()
-        print "--------------HASH--------------", hash(match)
+        #print "--------------HASH--------------", hash(match)
 
         if root in self.matches.keys():
             if not match in self.matches.get(root):
@@ -50,7 +50,7 @@ class Match:
             self.__root_headers = {"eth_type": self.get_eth_type, "vlan_id": self.get_vlan_id, "src_ip": self.get_src_ip}
 
     def get_root(self):
-        print "match_type", self.match_type
+        #print "match_type", self.match_type
         root = Match(self.match_type)
         for attr in self.__root_headers:
             setattr(root, attr, self.__root_headers[attr]())
