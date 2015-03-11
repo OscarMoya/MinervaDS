@@ -116,7 +116,9 @@ class ResilientPathFinder():
     def get_orthogonal_vectors(self, mat, n_flows):
         print "- Get Orthogonal Vectors Method -"
         print "Init Mat: ", mat
-        orthogonal_map = mat.dot(mat.T)
+        mat_T = mat.T
+        orthogonal_map = mat * mat.T
+        #orthogonal_map = mat.dot(mat.T)
         orthogonal_vector_list = list()
         print "Orthogonal map: ", orthogonal_map
         orthogonal_map = orthogonal_map.T       #Transposed for easy vector indexing
