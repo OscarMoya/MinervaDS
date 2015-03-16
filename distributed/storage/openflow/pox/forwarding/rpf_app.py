@@ -125,12 +125,17 @@ class ResilientModule(object):
 
     def match_host_type(self, ip):
         for host in self.host_finder.hosts:
+            print "host", host
+            print "host.ip", host.ip            
+            print "ip", ip
+            print "host.type", host.type
+
             if host.ip == ip and host.type == 'client':
-                return Match(match_type="client")
+                return Match("client")
             elif host.ip == ip and host.type == 'server':
-                return Match(match_type="server")
-            else:
-                raise Exception("No match available")    
+                return Match("server")
+        
+        raise Exception("No match available")    
 
     def _handle_ConnectionUp(self, event):
         """
@@ -208,10 +213,11 @@ class ResilientModule(object):
                     log.info(' --> Received packet-in event packet from unknown host')
                    
                     if dst_ip == self.cl_magic_ip:
-                        self.host_finder.add_host(src_ip, src_mac, dpid, in_port, type='client')
+                        self.host_finder.add_host(src_ip, src_mac, dpid, in_port, 'client')
+                        print "Host is client"
                     elif dst_ip == self.sv_magic_ip:
-                        self.host_finder.add_host(src_ip, src_mac, dpid, in_port, type='server')
-
+                        self.host_finder.add_host(src_ip, src_mac, dpid, in_port, 'server')
+                        print "host is server"
                 else:
                     log.info(' --> Received packet-in event packet from already known host')    #self.host_finder.hosts
 

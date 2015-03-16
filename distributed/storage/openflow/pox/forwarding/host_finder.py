@@ -76,8 +76,8 @@ class Hostfinder():
     def alive(self):
         pass
 
-    def add_host(self, ip_adr, mac_adr, dpid, port):
-        new_host = Host(ip_adr, mac_adr, dpid, port)
+    def add_host(self, ip_adr, mac_adr, dpid, port, htype):
+        new_host = Host(ip_adr, mac_adr, dpid, port, htype)
         log.info(' Host detected: %s', new_host)
         self.hosts.append(new_host)
         print "new_host: ", new_host
