@@ -10,6 +10,7 @@ from distributed.storage.src.api.client.west import ClientWestAPI
 from distributed.storage.src.config.config import DSConfig
 
 from distributed.storage.src.util.packetmanager import PacketManager
+from distributed.storage.src.util.service_thread import ServiceThread
 
 from distributed.storage.src.channel.engine import ChannelEngine
 
@@ -19,7 +20,26 @@ import os
 import time
 import uuid
 import xmlrpclib
+import datetime
+import threading
 from distributed.storage.src.util.threadmanager import ThreadManager
+
+
+def logger(message):
+    ServiceThread.start_in_new_thread(logger_thread, message)
+
+def logger_thread(message, log_file="/home/MinervaDS/time_client_v2b.txt"):
+    if os.path.exists(log_file):
+        l = open(log_file, 'a')
+        l.write(message+"\n")
+
+    else:
+        l = open(log_file, 'wb')
+        l.write(message+"\n")
+    l.close()
+
+def get_time_now():
+    return str(datetime.datetime.now().strftime('%M:%S.%f')[:-3])
 
 
 class ClientManager:
@@ -71,9 +91,16 @@ class ClientManager:
         result = ThreadManager.start_method_in_new_thread(self.__north_backend.join, [self.__id, self.__type, mgmt_url, data_url])
 
     def upload_file(self, file, requirements):
+        message = "Start - Time: %s " % (get_time_now())
+        logger(message)
+
         file_size = "Default"
         servers = self.__north_backend.write_request(self.__id, file_size, requirements)
         result = self.__send(servers, file)
+       
+        message = "End - Time: %s " % (get_time_now())
+        logger(message)
+
         return result
 
     def download_file(self, file_id):
@@ -131,18 +158,54 @@ class ClientManager:
 
         chunk_list = self.__split_file(file)
 
+
         chunk_a = chunk_list.pop(0)
+        chunk_a_value = chunk_a.get("value")
+        print "value", chunk_a_value
+        f = open(chunk_a_value, "rb")
+        chunk_a_data = str(f.read())
+        f.close()
+        #ThreadManager.start_method_in_new_thread(channel_a.write, [chunk_a_data, servers.get("file_id"), chunk_a.get("type")])
+        thread1 = threading.Thread(target=channel_a.write, args=[chunk_a_data, servers.get("file_id"), chunk_a.get("type")])
+        thread1.start()
+
         chunk_b = chunk_list.pop(0)
+        chunk_b_value = chunk_b.get("value")
+        print "value", chunk_b_value
+        f = open(chunk_b_value, "rb")
+        chunk_b_data = f.read()
+        f.close()
+        #ThreadManager.start_method_in_new_thread(channel_b.write, [chunk_b_data, servers.get("file_id"), chunk_b.get("type")])
+        thread2 = threading.Thread(target=channel_b.write, args=[chunk_b_data, servers.get("file_id"), chunk_b.get("type")])
+        thread2.start()
+
         chunk_c = chunk_list.pop(0)
+        chunk_c_value = chunk_c.get("value")
+        print "value", chunk_c_value
+        f = open(chunk_c_value, "rb")
+        chunk_c_data = f.read()
+        f.close()
+        #ThreadManager.start_method_in_new_thread(channel_c.write, [chunk_c_data, servers.get("file_id"), chunk_c.get("type")])
+        thread3 = threading.Thread(target=channel_c.write, args=[chunk_c_data, servers.get("file_id"), chunk_c.get("type")])
+        thread3.start()
+
         del chunk_list
 
-        ThreadManager.start_method_in_new_thread(channel_a.write, [chunk_a.get("value"), servers.get("file_id"),chunk_a.get("type")])
-        ThreadManager.start_method_in_new_thread(channel_b.write, [chunk_b.get("value"), servers.get("file_id"),chunk_a.get("type")])
-        ThreadManager.start_method_in_new_thread(channel_c.write, [chunk_c.get("value"), servers.get("file_id"),chunk_a.get("type")])
+        #del chunk_a_data
+        #del chunk_b_data
+        #del chunk_c_data
+
+        #ThreadManager.start_method_in_new_thread(channel_a.write, [chunk_a.get("value"), servers.get("file_id"),chunk_a.get("type")])
+        #ThreadManager.start_method_in_new_thread(channel_b.write, [chunk_b.get("value"), servers.get("file_id"),chunk_b.get("type")])
+        #ThreadManager.start_method_in_new_thread(channel_c.write, [chunk_c.get("value"), servers.get("file_id"),chunk_c.get("type")])
 
         #result_a = channel_a.write(chunk_a.get("value"), servers.get("file_id"),chunk_a.get("type"))
         #result_b = channel_b.write(chunk_b.get("value"), servers.get("file_id"),chunk_b.get("type"))
         #result_c = channel_c.write(chunk_c.get("value"), servers.get("file_id"),chunk_c.get("type"))
+
+        thread1.join()
+        thread2.join()
+        thread3.join()
 
         return True, servers.get("file_id")
 
@@ -160,7 +223,7 @@ class ClientManager:
         return full_file
 
     def __split_file(self, file):
-        chunked = self.__nf_manager.deconstruct(file)
+        chunked = self.__nf_manager.deconstruct(file) #list of file paths
         return chunked
 
     def __mount_channel(self, url, channel_type):
