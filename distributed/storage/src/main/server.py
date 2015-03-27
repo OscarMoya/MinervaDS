@@ -8,7 +8,8 @@ def prepare_environment():
     print path
     path = path.split("/")
     print path
-    path = "/".join(path[0:4])
+    #path = "/".join(path[0:4])	# Error with imports
+    path = "/".join(path[0:3])
     print "path", path
     sys.path.append(path)
 
