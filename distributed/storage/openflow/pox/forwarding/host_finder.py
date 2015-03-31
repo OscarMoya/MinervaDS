@@ -80,7 +80,7 @@ class Hostfinder():
         new_host = Host(ip_adr, mac_adr, dpid, port, htype)
         log.info(' Host detected: %s', new_host)
         self.hosts.append(new_host)
-        print "new_host: ", new_host
+        #print "new_host: ", new_host
         #print "HOSTS_LIST_UPDATED: ", self.hosts
         #self._update_topology(new_host)
         return
