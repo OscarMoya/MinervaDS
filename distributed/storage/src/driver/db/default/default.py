@@ -31,9 +31,13 @@ class DefaultDB(DBBase):
     def filter(self, **kwargs):
         db = self.__load_all()
         id = kwargs.get(self.PRIMARY_KEY)
+        #print "filter - id", id
+        
         if id:
             entry = db.get(id)
             kwargs.pop(self.PRIMARY_KEY)
+            #print "entry", entry
+            #print "kwargs", kwargs
             if not kwargs:
                 return [{id:db[id]}]
 
@@ -45,8 +49,19 @@ class DefaultDB(DBBase):
             result = list()
             for id in db:
                 entry = db[id]
-                if set(kwargs.keys()).issubset(set(entry.keys())) and set(kwargs.values()).issubset(set(entry.values())):
-                    result.append({id:db[id]})
+           
+                #print "filter - entry", entry
+                #print "kwargs.keys", kwargs.keys(), type(kwargs.keys())
+                #print "entry.keys", entry.keys(), type(entry.keys())
+                #print "kwargs.values", kwargs.values(), type(kwargs.values())
+                #print "entry.values", entry.values(), type(entry.values())
+                #if set(kwargs.keys()).issubset(set(entry.keys())) and set(kwargs.values()).issubset(set(entry.values())):
+                if set(kwargs.keys()).issubset(set(entry.keys())):
+                    #print "first if"
+                    if set(kwargs.values()[0]).issubset(set(entry.values()[2])):
+                        #print "second if"
+
+                        result.append({id:db[id]})
 
             return result
 

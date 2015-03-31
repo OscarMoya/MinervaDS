@@ -28,7 +28,7 @@ from distributed.storage.src.util.threadmanager import ThreadManager
 def logger(message):
     ServiceThread.start_in_new_thread(logger_thread, message)
 
-def logger_thread(message, log_file="/home/MinervaDS/time_client_v2b.txt"):
+def logger_thread(message, log_file="/home/MinervaDS/time_client_vB.txt"):
     if os.path.exists(log_file):
         l = open(log_file, 'a')
         l.write(message+"\n")
@@ -90,21 +90,28 @@ class ClientManager:
 
         result = ThreadManager.start_method_in_new_thread(self.__north_backend.join, [self.__id, self.__type, mgmt_url, data_url])
 
-    def upload_file(self, file, requirements):
-        message = "Start - Time: %s " % (get_time_now())
-        logger(message)
+    def upload_file(self, file, requirements=2):
+        """
+        Requirements: [2,3] (tcp, udp).Defaults to 2
+        """
+        #message = "Start - Time: %s " % (get_time_now())
+        #logger(message)
 
         file_size = "Default"
         servers = self.__north_backend.write_request(self.__id, file_size, requirements)
         result = self.__send(servers, file)
        
-        message = "End - Time: %s " % (get_time_now())
-        logger(message)
+        #message = "End - Time: %s " % (get_time_now())
+        #logger(message)
 
         return result
 
     def download_file(self, file_id):
         #TODO lock this thread or send the locker
+        import time
+        message = "Start - Time: %s " % (get_time_now())
+        logger(message)
+
         chunks = self.__north_backend.read_request(self.__id, file_id)
         local_request = dict()
         local_request[file_id] = dict()
@@ -114,10 +121,16 @@ class ClientManager:
         self.__requests.update(local_request)
         self.__ready[file_id] = False
         while not self.__ready[file_id]:
-            True
-
+            continue
+        
+        print "Two chunks received at least"
+        print "File id:", file_id
         chunks = self.__file_db.filter(file_id=file_id)
         file = self.__construct_file(chunks)
+       
+        message = "End - Time: %s " % (get_time_now())
+        logger(message)        
+
         return file
 
     def __configure_south_backend(self):
@@ -163,7 +176,8 @@ class ClientManager:
         chunk_a_value = chunk_a.get("value")
         print "value", chunk_a_value
         f = open(chunk_a_value, "rb")
-        chunk_a_data = str(f.read())
+        #chunk_a_data = str(f.read())
+        chunk_a_data = xmlrpclib.Binary(f.read())
         f.close()
         #ThreadManager.start_method_in_new_thread(channel_a.write, [chunk_a_data, servers.get("file_id"), chunk_a.get("type")])
         thread1 = threading.Thread(target=channel_a.write, args=[chunk_a_data, servers.get("file_id"), chunk_a.get("type")])
@@ -173,7 +187,8 @@ class ClientManager:
         chunk_b_value = chunk_b.get("value")
         print "value", chunk_b_value
         f = open(chunk_b_value, "rb")
-        chunk_b_data = f.read()
+        #chunk_b_data = f.read()
+        chunk_b_data = xmlrpclib.Binary(f.read())
         f.close()
         #ThreadManager.start_method_in_new_thread(channel_b.write, [chunk_b_data, servers.get("file_id"), chunk_b.get("type")])
         thread2 = threading.Thread(target=channel_b.write, args=[chunk_b_data, servers.get("file_id"), chunk_b.get("type")])
@@ -183,7 +198,8 @@ class ClientManager:
         chunk_c_value = chunk_c.get("value")
         print "value", chunk_c_value
         f = open(chunk_c_value, "rb")
-        chunk_c_data = f.read()
+        #chunk_c_data = f.read()
+        chunk_c_data = xmlrpclib.Binary(f.read())
         f.close()
         #ThreadManager.start_method_in_new_thread(channel_c.write, [chunk_c_data, servers.get("file_id"), chunk_c.get("type")])
         thread3 = threading.Thread(target=channel_c.write, args=[chunk_c_data, servers.get("file_id"), chunk_c.get("type")])
@@ -191,10 +207,9 @@ class ClientManager:
 
         del chunk_list
 
-
-        #del chunk_a_data
-        #del chunk_b_data
-        #del chunk_c_data
+        del chunk_a_data
+        del chunk_b_data
+        del chunk_c_data
 
         #ThreadManager.start_method_in_new_thread(channel_a.write, [chunk_a.get("value"), servers.get("file_id"),chunk_a.get("type")])
         #ThreadManager.start_method_in_new_thread(channel_b.write, [chunk_b.get("value"), servers.get("file_id"),chunk_b.get("type")])
@@ -212,9 +227,15 @@ class ClientManager:
 
     def __receive(self, file_id):
         chunks = self.__requests.get(file_id)
-        should_continue = True
+        #should_continue = True
+        #for chunk_key in chunks:
+            #should_continue = should_continue and chunks[chunk_key]
+        should_continue = False
+        values = list()
         for chunk_key in chunks:
-            should_continue = should_continue and chunks[chunk_key]
+            values.append(chunks[chunk_key])
+        if values.count(True) >= 2:
+            should_continue = True        
         if should_continue:
             chunks = self.__load_chunks(file_id)  #TODO Implement
             #return self.__construct_file(chunks)
