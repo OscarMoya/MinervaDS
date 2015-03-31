@@ -77,7 +77,7 @@ class ClientManager:
         return result
 
     def download_file(self, file_id):
-        #TODO lock this thread or send the locker
+        # TODO: Lock this thread or send the locker
         chunks = self.__north_backend.read_request(self.__id, file_id)
         local_request = dict()
         local_request[file_id] = dict()
@@ -119,7 +119,7 @@ class ClientManager:
         self.__ready[file_id] = True
 
     def __send(self, servers, file):
-        #TODO This should be more or less processed
+        # TODO: This should be more or less processed
 
         server_a = servers.get(self.CHUNK_A_TYPE)
         server_b = servers.get(self.CHUNK_B_TYPE)
@@ -140,10 +140,6 @@ class ClientManager:
         ThreadManager.start_method_in_new_thread(channel_b.write, [chunk_b.get("value"), servers.get("file_id"),chunk_b.get("type")])
         ThreadManager.start_method_in_new_thread(channel_c.write, [chunk_c.get("value"), servers.get("file_id"),chunk_c.get("type")])
 
-        #result_a = channel_a.write(chunk_a.get("value"), servers.get("file_id"),chunk_a.get("type"))
-        #result_b = channel_b.write(chunk_b.get("value"), servers.get("file_id"),chunk_b.get("type"))
-        #result_c = channel_c.write(chunk_c.get("value"), servers.get("file_id"),chunk_c.get("type"))
-
         return True, servers.get("file_id")
 
     def __receive(self, file_id):
@@ -152,8 +148,7 @@ class ClientManager:
         for chunk_key in chunks:
             should_continue = should_continue and chunks[chunk_key]
         if should_continue:
-            chunks = self.__load_chunks(file_id)  #TODO Implement
-            #return self.__construct_file(chunks)
+            chunks = self.__load_chunks(file_id)  # TODO: Implement
 
     def __construct_file(self, file_chunks):
         full_file = self.__nf_manager.reconstruct(file_chunks)
@@ -180,19 +175,18 @@ class ClientManager:
         elif func == "write":
             return self.__process_write(**kwargs)
         else:
-            #TODO Raise exception?
+            # TODO: Raise exception?
             pass
 
     def __process_ping(self, **kwargs):
-        #TODO Log the call
+        # TODO: Log the call
         pass
 
     def __process_syn_request(self, **kwargs):
-        #TODO Log The Call
+        # TODO: Log The Call
         pass
 
     def __process_read(self, **kwargs):
-        #TODO
         pass
 
     def __process_write(self, **kwargs):
@@ -207,15 +201,6 @@ class ClientManager:
 
     def __get_file_size(self, file_size):
         return os.stat(file_size).st_size
-
-    """
-    def get_file_size(self, file_size):
-        old_file_position = file_size.tell()
-        file_size.seek(0, os.SEEK_END)
-        size = file_size.tell()
-        file_size.seek(old_file_position, os.SEEK_SET)
-        return size
-    """
 
     def get_north_backend(self):
         return self.__north_backend

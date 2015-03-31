@@ -10,7 +10,6 @@ class PacketManager:
             subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         except:
             subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
-
         return True
 
     @staticmethod

@@ -6,7 +6,6 @@ class MatchManager:
 
     def check_in(self, match):
         root = match.get_root()
-        #print "--------------HASH--------------", hash(match)
 
         if root in self.matches.keys():
             if not match in self.matches.get(root):
@@ -18,10 +17,7 @@ class MatchManager:
         result = list()
         departed_roots = list()
         for root in self.matches:
-            #print "root", root
-            #print "len(self.matches[root])", len(self.matches.get(root))
             if len(self.matches.get(root)) == 3:
-                #print "enters"
                 result.append(self.matches[root])
                 departed_roots.append(root)
         for root in departed_roots:
@@ -30,6 +26,7 @@ class MatchManager:
 
 
 class Match:
+
     def __init__(self, match_type="client"):
         self.in_port = None
         self.src_mac = None
@@ -90,7 +87,6 @@ class Match:
         return self.get_l3_dst_port()
 
     def __hash__(self):
-        #Java like implementation... hope it works
         result = 31 * 1
         attrs = self.__dict__
         for attr in attrs:
@@ -111,7 +107,6 @@ class Match:
         return result
 
 
-
 if __name__ == "__main__":
 
     match1 = Match()
@@ -125,9 +120,6 @@ if __name__ == "__main__":
             setattr(match3, attr, i)
             i += 1
 
-    print "1.", hash(match1), hash(match2)
-    print "2.", match1 == match2
-
     match2.dst_ip = 44
     match3.dst_ip = 54
 
@@ -135,13 +127,8 @@ if __name__ == "__main__":
     manager.check_in(match1)
     manager.check_in(match2)
     manager.check_in(match3)
-    print "3.", manager.matches
 
     result = manager.take_off()
-    print "A. result", result
     for list in result:
-        print "B. list", list
         for match in list:
-            print "C. match", match
             root_dict = match.in_port
-            print "D. root_dict - in_port:", root_dict

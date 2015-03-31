@@ -22,11 +22,9 @@ class Hostfinder():
 
         for link in self.topology:
             if link.dpid1 not in net_dpids:
-                #print "dpid1", link.dpid1
                 net_dpids.append(link.dpid1)
             else:
                 continue
-        #print "net_dpids", net_dpids
         return net_dpids
 
     def topology_to_matrix(self):
@@ -34,16 +32,11 @@ class Hostfinder():
         table = {}
 
         for link in self.topology:
-            #print "link", link
-            #print "link.dpid1", link.dpid1
-            #print "link.dpid2", link.dpid2
-            #print "link.port1", link.port1
             try:
                 table[link.dpid1].update({link.dpid2: link.port1})
             except:
                 table[link.dpid1] = ({link.dpid2: link.port1})
 
-        #print "TABLE_MATRIX", table
         return table
 
     def update_topology(self):
@@ -115,6 +108,7 @@ class Link(namedtuple("LinkBase", ("dpid1", "port1", "dpid2", "port2"))):
         def __repr__(self):
             return "Link(dpid1=%s,port1=%s, dpid2=%s,port2=%s)" % (self.dpid1,
             self.port1, self.dpid2, self.port2)
+
 
 class Host(namedtuple("HostBase", ("ip", "mac", "dpid", "port", "type"))):
         @property

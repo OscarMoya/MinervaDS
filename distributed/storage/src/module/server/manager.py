@@ -23,30 +23,23 @@ class ServerManager:
     def __init__(self, db=None, id=None):
         if not id:
             id = uuid.uuid4()
-
         if not db:
             db = DefaultFileDB("server")
-
         self.__nf_manager = None
-
         self.__type = DSConfig.SERVER_TYPE
         self.__default_mgmt_port = DSConfig.DEFAULT_MGMT_PORT
         self.__default_data_port = DSConfig.DEFAULT_DATA_PORT
-
         self.__north_backend = None
         self.__east_backend = None
         self.__west_backend = None
         self.__south_backend = None
-
         self.__id = id
         self.__db = db
-
         self.configure()
 
     def configure(self):
         self.__configure_west_backend()
         self.__configure_south_backend()
-
 
     def __configure_west_backend(self):
         pipe = self
@@ -74,17 +67,15 @@ class ServerManager:
         self.__south_backend.start(mgmt_ip, mgmt_port)
         self.__west_backend.start(data_ip, data_port)
         self.__start_north_backend()
-
         data_url = "http://"+ data_ip + ":" + str(data_port)
         mgmt_url = "http://"+ mgmt_ip + ":" + str(mgmt_port)
-
         result = ThreadManager.start_method_in_new_thread(self.__north_backend.join, [self.__id, self.__type, mgmt_url, data_url])
         if self.__db:
             self.__db.load()
         return result
 
     def alert(self, func, **kwargs):
-        #TODO: Implement
+        # TODO: Implement
         if func == "write":
             self.__process_write(**kwargs)
         elif func == "ping":
@@ -92,20 +83,20 @@ class ServerManager:
         elif func == "controller_write_request":
             self.__send_to_client(**kwargs)
         else:
-            #TODO See what we can do
+            # TODO See what we can do
             pass
         pass
 
     def __process_write(self, **kwargs):
-        #TODO: Implement, Log The Call
+        # TODO: Implement, Log The Call
         pass
 
     def __process_ping(self, **kwargs):
-        #TODO: Implement, Log The Call
+        # TODO: Implement, Log The Call
         pass
 
     def send_to(self, file_id, endpoint_params):
-        #TODO: Implement
+        # TODO: Implement
         pass
 
     def get_id(self):
@@ -143,5 +134,4 @@ class ServerManager:
     def disconnect(self):
         self.__north_backend.leave(self.__id)
         return True
-
 

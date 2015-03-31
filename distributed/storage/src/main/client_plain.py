@@ -75,7 +75,7 @@ path = path.split("/")
 path = "/".join(path[0:4])
 sys.path.append(path)
 
-#Cleaning DBs
+# Cleaning DBs
 command = "rm -rf clientfile"
 
 try:

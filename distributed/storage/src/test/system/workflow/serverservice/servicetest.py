@@ -12,13 +12,9 @@ class ServiceTest(unittest.TestCase):
 
     def setUp(self):
         self.channel = MockedChannel()
-
         self.server = SimpleXMLRPCServer(("localhost", 1111))
         self.server.register_instance(self.channel)
-
         ThreadManager.start_method_in_new_thread(self.server.serve_forever, [])
-
-
         self.client = xmlrpclib.ServerProxy("http://localhost:1111")
 
     def test_should_join(self):

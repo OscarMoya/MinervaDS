@@ -47,7 +47,7 @@ class ControllerManager:
         elif func == "write_request":
             self.__process_write_request_event(**kwargs)
         else:
-            #TODO See what we can do
+            #TODO: Fill
             pass
 
     def __process_join_event(self, **kwargs):
@@ -75,9 +75,9 @@ class ControllerManager:
         server_b_id = server_b[server_b.keys()[0]].get("server_id")
         server_c_id = server_c[server_c.keys()[0]].get("server_id")
 
-        server_a_endpoint = self.__mount_endpoint( server_a_id, "mgmt")#self.__endpoint_db.filter(id=server_a_id)[0]
-        server_b_endpoint = self.__mount_endpoint( server_b_id, "mgmt")#self.__endpoint_db.filter(id=server_b_id)[0]
-        server_c_endpoint =self.__mount_endpoint( server_c_id, "mgmt") #self.__endpoint_db.filter(id=server_c_id)[0]
+        server_a_endpoint = self.__mount_endpoint( server_a_id, "mgmt")
+        server_b_endpoint = self.__mount_endpoint( server_b_id, "mgmt")
+        server_c_endpoint =self.__mount_endpoint( server_c_id, "mgmt")
 
         client = self.__endpoint_db.filter(id=client_id)[0]
         client_url = client.get(client_id).get("data_url")
@@ -87,7 +87,7 @@ class ControllerManager:
         ThreadManager.start_method_in_new_thread(server_c_endpoint.write_request, [client_url, chunk_id_c, self.__get_channel({})])
 
     def __process_write_request_event(self, **kwargs):
-        #TODO probably just log the call
+        #TODO: Probably just log the call
         pass
 
     def __add_endpoint(self, **kwargs):

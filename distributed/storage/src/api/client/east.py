@@ -26,7 +26,7 @@ class ClientEastAPI(EndPointEastBase):
         self.__client_east_channel = xmlrpclib.ServerProxy(ip, port)
 
     def __process_result(self, result):
-        #TODO Do something. like raise exceptions if needed
+        #TODO: Raise exception or similar if needed
         return result
 
     def get_client_east_channel(self):

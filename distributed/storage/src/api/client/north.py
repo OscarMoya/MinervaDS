@@ -26,7 +26,7 @@ class ClientNorthAPI(EndPointNorthBase):
         self.__controller_north_channel = xmlrpclib.ServerProxy(ip)
 
     def __process_result(self, result):
-        #TODO: Do something. like raise exceptions if needed
+        # TODO: Raise exception or similar if needed
         return result
 
     def get_controller_north_channel(self):

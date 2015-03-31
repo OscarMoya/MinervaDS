@@ -55,16 +55,16 @@ class ControllerSouthDriver(EndPointNorthBase):
             raise e
 
         file_id = str(uuid.uuid4())
-        #TODO: do the magic getting the most suitable servers :)
+        # TODO: Do the magic getting the most suitable servers :)
 
-        #TODO: Solving things in ugly way when not enough servers
+        # TODO: Solving things in ugly way when not enough servers
         if len(servers) < 3:
             servers = [servers[0],servers[0],servers[0]]
         server_a = servers[0]
         server_b = servers[1]
         server_c = servers[2]
 
-        #XXX This should not be stored here
+        # TODO: Store elsewhere. This should not be stored here
         self.__file_db.save(chunk_id=file_id+"-"+self.CHUNK_A_TYPE, client_id=client_id, server_id=server_a.keys()[0], file_id=file_id, chunk_type=self.CHUNK_A_TYPE)
         self.__file_db.save(chunk_id=file_id+"-"+self.CHUNK_B_TYPE, client_id=client_id, server_id=server_b.keys()[0], file_id=file_id, chunk_type=self.CHUNK_B_TYPE)
         self.__file_db.save(chunk_id=file_id+"-"+self.CHUNK_AXB_TYPE, client_id=client_id, server_id=server_c.keys()[0], file_id=file_id, chunk_type=self.CHUNK_AXB_TYPE)
@@ -101,7 +101,7 @@ class ControllerSouthDriver(EndPointNorthBase):
             return self.__pipe.alert(func, **kwargs)
 
     def __get_channel(self, requirements):
-        return "dummy" #TODO implement
+        return "dummy" # TODO: Implement
 
     def __mount_server(self, url):
         return xmlrpclib.ServerProxy(url)

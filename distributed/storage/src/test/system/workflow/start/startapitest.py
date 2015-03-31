@@ -26,15 +26,10 @@ class ControllerSouthBackendTest(unittest.TestCase):
 
     def tearDown(self):
         pass
-        #self.client.stop_server()
 
     def test_should_join(self):
         result = self.client.join("ID", "Client", "10.10.253.1", "10.10.254.1")
         self.assertTrue(result)
-
-    #def test_should_add_endpoint_on_memory(self):
-        #print self.manager.active_endpoints
-
 
 
 if __name__ == "__main__":

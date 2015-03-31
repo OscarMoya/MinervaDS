@@ -12,7 +12,7 @@ class ChannelEngine:
 
     def load_type(self, channel_type):
         channel_module = None
-        model_dir = os.path.dirname(__file__) + "/types/" #ChannelTypes Location Location; removed ".." from dir path
+        model_dir = os.path.dirname(__file__) + "/types/" # ChannelTypes Location Location; removed ".." from dir path
         for filename in os.listdir(model_dir):
 
             if filename == self.__get_python_file(channel_type):

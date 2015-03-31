@@ -16,7 +16,6 @@ def logger_thread(message, log_file="/home/MinervaDS/client_perf.txt"):
     if os.path.exists(log_file):
         l = open(log_file, 'a')
         l.write(message+"\n")
-
     else:
         l = open(log_file, 'wb')
         l.write(message+"\n")
@@ -24,11 +23,8 @@ def logger_thread(message, log_file="/home/MinervaDS/client_perf.txt"):
 
 def prepare_environment():
     path = os.path.abspath(__file__)
-    print path
     path = path.split("/")
-    print path
     path = "/".join(path[0:4])
-    print "path", path
     sys.path.append(path)
 
     #Cleaning DBs
@@ -37,11 +33,9 @@ def prepare_environment():
             subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     except:
             subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
-
     return True
 
 def start_client(mgmt_ip, mgmt_port, data_ip, data_port):
-
     id = "Server-" + str(random.randint(1,1000))
     controller_manager = ClientManager(id=id)
     controller_manager.start(mgmt_ip, mgmt_port, data_ip, data_port)
@@ -70,7 +64,5 @@ if __name__ == "__main__":
     prepare_environment()
     from distributed.storage.src.module.client.manager import ClientManager
     start_client(sys.argv[1], int(sys.argv[2]), sys.argv[3], int(sys.argv[4]))
-    #pid = os.getpid()
-    #ThreadManager.start_method_in_new_thread(timer, [pid])
     while True:
         continue

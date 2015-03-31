@@ -14,13 +14,11 @@ import sys
 class ControllerSouthBackendWorkFlow(unittest.TestCase):
 
     def setUp(self):
-
         self.manager = ControllerManager()
         self.manager.start("10.10.253.1", 9696)
         self.client = xmlrpclib.ServerProxy("http://10.10.253.1:9696")
 
     def test_workflow(self):
-
         print "Client Manager started, preparing join"
         result = self.client.join("ID", "Client", "10.10.253.1", "10.10.254.1")
         self.check_join_result(result)
@@ -34,11 +32,8 @@ class ControllerSouthBackendWorkFlow(unittest.TestCase):
         self.check_endpoints_are_null()
         print "Results Checked"
 
-
-
     def tearDown(self):
         pass
-        #self.client.stop_server()
 
     def check_join_result(self, result):
         self.assertTrue(result)

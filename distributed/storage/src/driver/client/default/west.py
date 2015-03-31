@@ -27,6 +27,5 @@ class ClientWestDriver(EndPointEastBase):
         return True
 
     def __alert_pipe(self, func, **kwargs):
-
         if self.__pipe:
             self.__pipe.alert(func, **kwargs)

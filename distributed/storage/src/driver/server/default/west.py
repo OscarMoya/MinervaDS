@@ -25,8 +25,6 @@ class ServerWestDriver(EndPointEastBase):
         self.__alert_pipe("write", file_id=file_id, chunk_type=chunk_type, chunk_id=chunk_id)
         return result
 
-
-
     def __alert_pipe(self, func, **kwargs):
         if self.__pipe:
             return self.__pipe.alert(func, **kwargs)

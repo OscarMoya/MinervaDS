@@ -24,27 +24,19 @@ def logger_thread(message, log_file="/home/MinervaDS/controller_perf.txt"):
 
 def prepare_environment():
     path = os.path.abspath(__file__)
-    print path
     path = path.split("/")
-    print path
-    #path = "/".join(path[0:4])
-    #path = "/".join(path[0:4])	# Error with imports
     path = "/".join(path[0:3])
-    print "path", path
     sys.path.append(path)
 
-    #Cleaaning DBs
+    #Cleaning DBs
     command = "rm -rf controllerendpoint controllerlocation"
     try:
             subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     except:
             subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
-
     return True
 
-
 def start_controller(mgmt_ip, mgmt_port):
-
     controller_manager = ControllerManager()
     controller_manager.start(mgmt_ip, mgmt_port)
     return controller_manager
@@ -76,7 +68,4 @@ if __name__ == "__main__":
     ThreadManager.start_method_in_new_thread(timer, [pid])
     while True:
         continue
-
-
-
 

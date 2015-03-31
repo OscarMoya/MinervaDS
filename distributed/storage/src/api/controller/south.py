@@ -51,5 +51,5 @@ class ControllerSouthAPI:
 
     def start(self, ip, port):
         self.__handler.set_up_server(ip, port)
-        ThreadManager.start_method_in_new_thread(self.__handler.start_server, [],name="Controller south on: " +ip+":"+str(port))
+        ThreadManager.start_method_in_new_thread(self.__handler.start_server, [], name="Controller south on: "  + ip + ":" + str(port))
         return True

@@ -9,8 +9,6 @@ class MockedChannel(EndPointNorthBase):
 
     @checkfailmode
     def join(self, *args, **kwargs):
-
-        print "Called Join!!!!!"
         self.alert(self.join)
         return True
 
@@ -31,7 +29,6 @@ class MockedChannel(EndPointNorthBase):
         return True
 
     def alert(self,func, *args, **kwargs):
-        print "on alert"
         print self.pipe
         if self.pipe:
              self.pipe.alert("Method triggered %s" %func.__name__)

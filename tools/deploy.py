@@ -52,7 +52,6 @@ def start_controller_manager():
 
 def start_openflow_controller():
     ds_controller_ip = CONTROLLER_IP
-#    start_openflow_controller_command = "cd /home/pox/ && python pox.py --verbose openflow.of_01 --port=6634 forwarding.rpf_app &  && cd"
     process_command = "python pox.py --verbose openflow.of_01 --port=6634 forwarding.rpf_app >/dev/null 2>/dev/null &"
     start_openflow_controller_command = "cd /home/pox/ && " + process_command
     controller = send_command_to_client(ds_controller_ip, start_openflow_controller_command)
@@ -69,18 +68,6 @@ def stop_pid_command(process_name):
 def stop_pid(ip, process_name):
     shell = get_ssh_client_and_connect(ip)
     a,b,c = shell.exec_command(stop_pid_command(process_name))
-#    # Remove PID of active server/component
-#    a,b,c = shell.exec_command("ps aux | grep \"%s\"" % process_name)
-#    myList = b.readlines()
-#    # Remove SSH process
-##    a,b,c = shell.exec_command("ps aux | grep \"bash -c\"")
-##    myList.extend(b.readlines())
-#    pid = None
-#    for elem in myList:
-#        if process_name in elem:
-#            pid = elem.split(" ")[5]
-#            if pid:
-#                a,b,c = shell.exec_command("kill -9 %s" %str(pid))
 
 def stop_pid_local(process_name):
     os.system(stop_pid_command(process_name))

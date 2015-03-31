@@ -1,7 +1,5 @@
 from distributed.storage.src.module.server.manager import ServerManager
-
 from distributed.storage.src.driver.db.endpoint.default import DefaultEndPointDB
-
 import unittest
 
 class ServerGenericBackendTest(unittest.TestCase):

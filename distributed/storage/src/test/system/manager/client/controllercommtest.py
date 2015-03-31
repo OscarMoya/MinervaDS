@@ -3,10 +3,8 @@ from distributed.storage.src.module.controller.manager import ControllerManager
 from distributed.storage.src.driver.db.endpoint.default import DefaultEndPointDB
 from distributed.storage.src.driver.db.file.default import DefaultFileDB
 from distributed.storage.src.config.config import DSConfig
-
 import xmlrpclib
 import subprocess
-
 import unittest
 import os
 import signal
@@ -37,18 +35,12 @@ class ControllerCommunicationTest(unittest.TestCase):
 
     def test_should_check_controller_API(self):
         print "fa", self.manager.get_north_backend()
-        #print "an", self.manager.get_south_backend()
-        #print "cy", self.manager.get_east_backend()
-        #print "y!", self.manager.get_west_backend()
 
     def test_should_upload_file(self):
-        #self.manager.upload_file(self.file, self.requirements)
         pass
 
     def test_should_download_file(self):
-        #self.manager.download_file(self.file_id)
         pass
-
 
 if __name__ == "__main__":
     unittest.main()

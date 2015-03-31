@@ -2,20 +2,14 @@ from distributed.storage.src.driver.client.default.south import ClientSouthDrive
 from distributed.storage.src.driver.client.default.west import ClientWestDriver
 from distributed.storage.src.driver.db.endpoint.default import DefaultEndPointDB
 from distributed.storage.src.driver.db.file.default import DefaultFileDB
-
 from distributed.storage.src.api.client.north import ClientNorthAPI
 from distributed.storage.src.api.client.south import ClientSouthAPI
 from distributed.storage.src.api.client.west import ClientWestAPI
-
 from distributed.storage.src.config.config import DSConfig
-
 from distributed.storage.src.util.packetmanager import PacketManager
 from distributed.storage.src.util.service_thread import ServiceThread
-
 from distributed.storage.src.channel.engine import ChannelEngine
-
 from distributed.storage.src.module.nf.manager import NFManager
-
 import os
 import time
 import uuid
@@ -94,20 +88,13 @@ class ClientManager:
         """
         Requirements: [2,3] (tcp, udp).Defaults to 2
         """
-        #message = "Start - Time: %s " % (get_time_now())
-        #logger(message)
-
         file_size = "Default"
         servers = self.__north_backend.write_request(self.__id, file_size, requirements)
         result = self.__send(servers, file)
-       
-        #message = "End - Time: %s " % (get_time_now())
-        #logger(message)
-
         return result
 
     def download_file(self, file_id):
-        #TODO lock this thread or send the locker
+        # TODO: Lock this thread or send the locker
         import time
         message = "Start - Time: %s " % (get_time_now())
         logger(message)
@@ -138,7 +125,6 @@ class ClientManager:
         pipe = self
         driver = ClientSouthDriver(packet_manager, pipe)
         api = ClientSouthAPI(driver)
-
         self.__south_backend = api
 
     def __configure_west_backend(self):
@@ -159,27 +145,21 @@ class ClientManager:
         self.__ready[file_id] = True
 
     def __send(self, servers, file):
-        #TODO This should be more or less processed
+        # TODO This should be more or less processed
 
         server_a = servers.get(self.CHUNK_A_TYPE)
         server_b = servers.get(self.CHUNK_B_TYPE)
         server_axb = servers.get(self.CHUNK_AXB_TYPE)
-
         channel_a = self.__mount_channel(server_a, servers.get("channel"))
         channel_b = self.__mount_channel(server_b, servers.get("channel"))
         channel_c = self.__mount_channel(server_axb, servers.get("channel"))
-
         chunk_list = self.__split_file(file)
-
-
         chunk_a = chunk_list.pop(0)
         chunk_a_value = chunk_a.get("value")
-        print "value", chunk_a_value
+
         f = open(chunk_a_value, "rb")
-        #chunk_a_data = str(f.read())
         chunk_a_data = xmlrpclib.Binary(f.read())
         f.close()
-        #ThreadManager.start_method_in_new_thread(channel_a.write, [chunk_a_data, servers.get("file_id"), chunk_a.get("type")])
         thread1 = threading.Thread(target=channel_a.write, args=[chunk_a_data, servers.get("file_id"), chunk_a.get("type")])
         thread1.start()
 
@@ -187,10 +167,8 @@ class ClientManager:
         chunk_b_value = chunk_b.get("value")
         print "value", chunk_b_value
         f = open(chunk_b_value, "rb")
-        #chunk_b_data = f.read()
         chunk_b_data = xmlrpclib.Binary(f.read())
         f.close()
-        #ThreadManager.start_method_in_new_thread(channel_b.write, [chunk_b_data, servers.get("file_id"), chunk_b.get("type")])
         thread2 = threading.Thread(target=channel_b.write, args=[chunk_b_data, servers.get("file_id"), chunk_b.get("type")])
         thread2.start()
 
@@ -198,26 +176,15 @@ class ClientManager:
         chunk_c_value = chunk_c.get("value")
         print "value", chunk_c_value
         f = open(chunk_c_value, "rb")
-        #chunk_c_data = f.read()
         chunk_c_data = xmlrpclib.Binary(f.read())
         f.close()
-        #ThreadManager.start_method_in_new_thread(channel_c.write, [chunk_c_data, servers.get("file_id"), chunk_c.get("type")])
         thread3 = threading.Thread(target=channel_c.write, args=[chunk_c_data, servers.get("file_id"), chunk_c.get("type")])
         thread3.start()
 
         del chunk_list
-
         del chunk_a_data
         del chunk_b_data
         del chunk_c_data
-
-        #ThreadManager.start_method_in_new_thread(channel_a.write, [chunk_a.get("value"), servers.get("file_id"),chunk_a.get("type")])
-        #ThreadManager.start_method_in_new_thread(channel_b.write, [chunk_b.get("value"), servers.get("file_id"),chunk_b.get("type")])
-        #ThreadManager.start_method_in_new_thread(channel_c.write, [chunk_c.get("value"), servers.get("file_id"),chunk_c.get("type")])
-
-        #result_a = channel_a.write(chunk_a.get("value"), servers.get("file_id"),chunk_a.get("type"))
-        #result_b = channel_b.write(chunk_b.get("value"), servers.get("file_id"),chunk_b.get("type"))
-        #result_c = channel_c.write(chunk_c.get("value"), servers.get("file_id"),chunk_c.get("type"))
 
         thread1.join()
         thread2.join()
@@ -227,9 +194,6 @@ class ClientManager:
 
     def __receive(self, file_id):
         chunks = self.__requests.get(file_id)
-        #should_continue = True
-        #for chunk_key in chunks:
-            #should_continue = should_continue and chunks[chunk_key]
         should_continue = False
         values = list()
         for chunk_key in chunks:
@@ -237,8 +201,7 @@ class ClientManager:
         if values.count(True) >= 2:
             should_continue = True        
         if should_continue:
-            chunks = self.__load_chunks(file_id)  #TODO Implement
-            #return self.__construct_file(chunks)
+            chunks = self.__load_chunks(file_id)  # TODO: Implement
 
     def __construct_file(self, file_chunks):
         full_file = self.__nf_manager.reconstruct(file_chunks)
@@ -265,19 +228,19 @@ class ClientManager:
         elif func == "write":
             return self.__process_write(**kwargs)
         else:
-            #TODO Raise exception?
+            # TODO: Raise exception?
             pass
 
     def __process_ping(self, **kwargs):
-        #TODO Log the call
+        # TODO: Log the call
         pass
 
     def __process_syn_request(self, **kwargs):
-        #TODO Log The Call
+        # TODO: Log The Call
         pass
 
     def __process_read(self, **kwargs):
-        #TODO
+        # TODO
         pass
 
     def __process_write(self, **kwargs):
@@ -292,15 +255,6 @@ class ClientManager:
 
     def __get_file_size(self, file_size):
         return os.stat(file_size).st_size
-
-    """
-    def get_file_size(self, file_size):
-        old_file_position = file_size.tell()
-        file_size.seek(0, os.SEEK_END)
-        size = file_size.tell()
-        file_size.seek(old_file_position, os.SEEK_SET)
-        return size
-    """
 
     def get_north_backend(self):
         return self.__north_backend

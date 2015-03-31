@@ -20,14 +20,10 @@ class ControllerManagerTest(unittest.TestCase):
         self.controller = ControllerSouthDriver(None, self.db_endpoint, None)
 
     def test_should_start(self):
-        #TODO: Works!
         self.manager.start("10.100.10.50", 9090)
 
     def test_should_alert(self):
-        #TODO: tests Alert method, to test funcs in driver/controller/controllertest
         params = {"id": "A", "type": "client", "mgmt_ip": "10.100.10.71", "data_ip": "192.168.1.10"}
-        #self.assertTrue(self.manager.alert(self.controller.join(**params))==None)
-        #self.assertTrue(self.manager.alert(self.controller.leave)==None)
         self.assertTrue(self.manager.alert(self.controller.read_request)==None)
         self.assertTrue(self.manager.alert(self.controller.write_request)==None)
 
