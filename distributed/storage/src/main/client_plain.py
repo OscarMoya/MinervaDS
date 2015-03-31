@@ -13,7 +13,7 @@ from distributed.storage.src.util.service_thread import ServiceThread
 def logger(message):
     ServiceThread.start_in_new_thread(logger_thread, message)
 
-def logger_thread(message, log_file="/home/MinervaDS/client_perf_3.txt"):
+def logger_thread(message, log_file="/path/to/file"):
     if os.path.exists(log_file):
         l = open(log_file, 'a')
         l.write(message+"\n")

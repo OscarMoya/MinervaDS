@@ -6,9 +6,10 @@ import time
 import string
 import commands
 import threading
-from distributed.storage.src.util.threadmanager import ThreadManager
-from distributed.storage.src.util.service_thread import ServiceThread
+#from distributed.storage.src.util.threadmanager import ThreadManager
+#from distributed.storage.src.util.service_thread import ServiceThread
 
+"""
 def logger(message):
     ServiceThread.start_in_new_thread(logger_thread, message)
 
@@ -21,6 +22,7 @@ def logger_thread(message, log_file="/home/MinervaDS/controller_perf.txt"):
         l = open(log_file, 'wb')
         l.write(message+"\n")
     l.close()
+"""
 
 def prepare_environment():
     path = os.path.abspath(__file__)
@@ -72,8 +74,7 @@ if __name__ == "__main__":
     prepare_environment()
     from distributed.storage.src.module.controller.manager import ControllerManager
     start_controller(sys.argv[1], int(sys.argv[2]))
-    pid = os.getpid()
-    ThreadManager.start_method_in_new_thread(timer, [pid])
+   
     while True:
         continue
 

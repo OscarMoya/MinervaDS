@@ -84,7 +84,6 @@ class ServerManager:
         return result
 
     def alert(self, func, **kwargs):
-        #TODO: Implement
         if func == "write":
             self.__process_write(**kwargs)
         elif func == "ping":
@@ -92,20 +91,19 @@ class ServerManager:
         elif func == "controller_write_request":
             self.__send_to_client(**kwargs)
         else:
-            #TODO See what we can do
             pass
         pass
 
     def __process_write(self, **kwargs):
-        #TODO: Implement, Log The Call
+        
         pass
 
     def __process_ping(self, **kwargs):
-        #TODO: Implement, Log The Call
+        
         pass
 
     def send_to(self, file_id, endpoint_params):
-        #TODO: Implement
+        
         pass
 
     def get_id(self):

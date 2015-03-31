@@ -6,7 +6,7 @@ class MatchManager:
 
     def check_in(self, match):
         root = match.get_root()
-        #print "--------------HASH--------------", hash(match)
+        
 
         if root in self.matches.keys():
             if not match in self.matches.get(root):
@@ -18,10 +18,9 @@ class MatchManager:
         result = list()
         departed_roots = list()
         for root in self.matches:
-            #print "root", root
-            #print "len(self.matches[root])", len(self.matches.get(root))
+            
             if len(self.matches.get(root)) == 3:
-                #print "enters"
+                
                 result.append(self.matches[root])
                 departed_roots.append(root)
         for root in departed_roots:
@@ -50,7 +49,7 @@ class Match:
             self.__root_headers = {"eth_type": self.get_eth_type, "vlan_id": self.get_vlan_id, "src_ip": self.get_src_ip}
 
     def get_root(self):
-        #print "match_type", self.match_type
+        
         root = Match(self.match_type)
         for attr in self.__root_headers:
             setattr(root, attr, self.__root_headers[attr]())
@@ -90,7 +89,7 @@ class Match:
         return self.get_l3_dst_port()
 
     def __hash__(self):
-        #Java like implementation... hope it works
+        
         result = 31 * 1
         attrs = self.__dict__
         for attr in attrs:
