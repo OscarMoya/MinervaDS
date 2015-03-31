@@ -76,7 +76,7 @@ class ResilientPathFinder():
 
     def find_places_for_nfs(self, resilient_paths, n_flows, used_nodes=list()):
         required_nf_pairs = n_flows - len(resilient_paths)
-        print "required_nf_pairs", required_nf_pairs
+        #print "required_nf_pairs", required_nf_pairs
 
         if required_nf_pairs == 0:
             return None, None
@@ -114,13 +114,15 @@ class ResilientPathFinder():
         return adj_array.tolist()
 
     def get_orthogonal_vectors(self, mat, n_flows):
-        print "- Get Orthogonal Vectors Method -"
-        print "Init Mat: ", mat
-        orthogonal_map = mat.dot(mat.T)
+        #print "- Get Orthogonal Vectors Method -"
+        #print "Init Mat: ", mat
+        mat_T = mat.T
+        orthogonal_map = mat * mat.T
+        #orthogonal_map = mat.dot(mat.T)
         orthogonal_vector_list = list()
-        print "Orthogonal map: ", orthogonal_map
+        #print "Orthogonal map: ", orthogonal_map
         orthogonal_map = orthogonal_map.T       #Transposed for easy vector indexing
-        print "ORTHOGONAL MAP Transposed: ", orthogonal_map
+        #print "ORTHOGONAL MAP Transposed: ", orthogonal_map
 
         for row in orthogonal_map:
             if row.sum() == 0:
@@ -129,11 +131,11 @@ class ResilientPathFinder():
 
             orthogonal_vector_list.append(row.tolist()[0].count(0))
 
-        print "ORTHOGONAL_VECTOR_LIST: ", orthogonal_vector_list
+        #print "ORTHOGONAL_VECTOR_LIST: ", orthogonal_vector_list
         max_orthogonal_vectors = max(orthogonal_vector_list)
         best_row = orthogonal_map[orthogonal_vector_list.index(max_orthogonal_vectors)]
         src_vector = orthogonal_vector_list.index(max_orthogonal_vectors)
-        print "BEST_ROW: ", best_row
+        #print "BEST_ROW: ", best_row
         indexes = list()
         best_row = best_row.tolist()[0]
 
@@ -143,7 +145,7 @@ class ResilientPathFinder():
 
         indexes.insert(src_vector, src_vector)
         result = list()
-        print "Indexes: ", indexes
+        #print "Indexes: ", indexes
 
         for i in indexes:
            result.append(mat[i].tolist()[0])

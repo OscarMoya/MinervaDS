@@ -125,14 +125,16 @@ class ResilientModule(object):
 
     def match_host_type(self, ip):
         for host in self.host_finder.hosts:
-            print "host", host
-            print "host.ip", host.ip            
-            print "ip", ip
-            print "host.type", host.type
+            #print "host", host
+            #print "host.ip", host.ip            
+            #print "ip", ip
+            #print "host.type", host.type
 
             if host.ip == ip and host.type == 'client':
+                #print mcolors.OKGREEN+"ip -> host.ip"+str(ip)+" "+str(host.ip)+" "+str(host.type)+mcolors.ENDC
                 return Match("client")
             elif host.ip == ip and host.type == 'server':
+                #print mcolors.OKGREEN+"ip -> host.ip"+str(ip)+" "+str(host.ip)+" "+str(host.type)+mcolors.ENDC
                 return Match("server")
         
         raise Exception("No match available")    
@@ -150,28 +152,56 @@ class ResilientModule(object):
         eth_headers = event.parse() #Ethernet part of the packet L2
         packet = event.parsed
         log.info("PacketIn Correctly Parsed")
+        
+        #print "eth_headers.next.id", eth_headers.next.id
+        if eth_headers.next.id != 1550:
+            #print mcolors.FAIL+"INTRUDER VLAN TAG"+mcolors.ENDC
+            return
 
         dpid = event.dpid
         in_port = event.port
-
+        
+        #print "DPID - IN_PORT", dpid, in_port
+        #print "packet", packet
+        #print "eth_headers", eth_headers
         #print "eth_headers.next", eth_headers.next.__dict__
         #print "eth_headers.next_dir", dir(eth_headers.next)
         #print "eth_headers.next_type", eth_headers.next.eth_type       
 
-        if eth_headers.next.eth_type == 2054:     #ARP datagram type hex 0806; 2054
-            print "ARP packet detected!"
+        if eth_headers.next.eth_type == 2054 or eth_headers.next.eth_type == 2048:     #ARP datagram type hex 0806; 2054
+            #print "ARP packet detected!"
             #print "packet", packet
             #print "header:", eth_headers
-            print "header.next:", eth_headers.next
-            print "header.next.next", eth_headers.next.next
-            arp_params = eth_headers.next.next
+            #print "header.next:", eth_headers.next
+            #print "header.next.next", eth_headers.next.next
+            
+            if eth_headers.next.eth_type == 2048:
+                #print "IP packet detected"
+                #print "eth_headers", eth_headers.__dict__
+                #print "eth_headers.next", eth_headers.next.__dict__
+                #print "eth_headers.next.next", eth_headers.next.next.__dict__
+                #print "eth_headers.next.next_dir", dir(eth_headers.next.next)
 
-            hw_type = arp_params.hwtype     # arp.HW_TYPE_ETHERNET
-            proto_type = arp_params.prototype  # arp.PROTO_TYPE_IP
-            src_mac = arp_params.hwsrc      # ETHER_ANY
-            dst_mac = arp_params.hwdst      # ETHER_ANY
-            src_ip = arp_params.protosrc   # IP_ANY
-            dst_ip = arp_params.protodst
+                ip_params = eth_headers.next.next
+
+                #hw_type = arp_params.hwtype     # arp.HW_TYPE_ETHERNET
+                #proto_type = arp_params.prototype  # arp.PROTO_TYPE_IP
+                src_mac = eth_headers.src      # ETHER_ANY
+                dst_mac = eth_headers.dst      # ETHER_ANY
+                src_ip = ip_params.srcip       # IP_ANY
+                dst_ip = ip_params.dstip
+                
+
+            else:
+                #print "ARP packet detected!"
+                arp_params = eth_headers.next.next
+
+                #hw_type = arp_params.hwtype     # arp.HW_TYPE_ETHERNET
+                #proto_type = arp_params.prototype  # arp.PROTO_TYPE_IP
+                src_mac = arp_params.hwsrc      # ETHER_ANY
+                dst_mac = arp_params.hwdst      # ETHER_ANY
+                src_ip = arp_params.protosrc   # IP_ANY
+                dst_ip = arp_params.protodst
 
             """
             print "hw_type", hw_type        # Hardware type, Ethernet = 1
@@ -217,33 +247,56 @@ class ResilientModule(object):
                         print "Host is client"
                     elif dst_ip == self.sv_magic_ip:
                         self.host_finder.add_host(src_ip, src_mac, dpid, in_port, 'server')
-                        print "host is server"
+                        print "Host is server"
                 else:
                     log.info(' --> Received packet-in event packet from already known host')    #self.host_finder.hosts
 
             ###########################################################################
             else:   # dst_ip != self.magic_ip:
                 #if dst_ip:
-                log.warning(" Couldn't find magic_ip in packet-in event packet")
+                log.info(" Packet-in event packet with no magic-ip")
 
                 packet_match = self.match_host_type(src_ip)
+               
+                if packet_match.match_type == "client":
+                    #print "packet_match of client"
+                    packet_match.in_port = in_port
+                    #print mcolors.OKGREEN+str(in_port)+mcolors.ENDC 
+                    packet_match.src_mac = src_mac
+                    packet_match.dst_mac = dst_mac
+                    #packet_match.eth_type = hw_type
+                    packet_match.vlan_id = None
+                    packet_match.vlan_priority = None
+                    packet_match.src_ip = src_ip
+                    #print mcolors.OKGREEN+str(src_ip)+mcolors.ENDC
+                    packet_match.dst_ip = dst_ip
+                    #print mcolors.OKGREEN+str(dst_ip)+mcolors.ENDC
+                    packet_match.ip_tos = None
+                    packet_match.l3_src_port = None
+                    packet_match.l3_dst_port = None
 
-                packet_match.in_port = in_port
-                packet_match.src_mac = src_mac
-                packet_match.dst_mac = dst_mac
-                packet_match.eth_type = hw_type
-                packet_match.vlan_id = None
-                packet_match.vlan_priority = None
-                packet_match.src_ip = src_ip
-                packet_match.dst_ip = dst_ip
-                packet_match.ip_tos = None
-                packet_match.l3_src_port = None
-                packet_match.l3_dst_port = None
+                else:
+                    #print "packet_match of server"
+                    #packet_match.in_port = in_port
+                    #print "in_port", mcolors.OKGREEN+str(in_port)+mcolors.ENDC
+                    #packet_match.src_mac = dst_mac
+                    #packet_match.dst_mac = src_mac
+                    #packet_match.eth_type = hw_type
+                    packet_match.vlan_id = 1550
+                    #packet_match.vlan_priority = None
+                    packet_match.src_ip = dst_ip
+                    #print "src_ip", mcolors.OKGREEN+str(dst_ip)+mcolors.ENDC
+                    packet_match.dst_ip = src_ip
+                    #print "dst_ip", mcolors.OKGREEN+str(src_ip)+mcolors.ENDC
+                    #packet_match.ip_tos = None
+                    #packet_match.l3_src_port = None
+                    #packet_match.l3_dst_port = None
+                
 
-                log.warning(" --> New packet_match")
+                log.info(" --> New packet_match")
 
                 self.packet_holder.check_in(packet_match)
-
+                
                 #print "matches", self.packet_holder.matches
 
                 pkt_ready = self.packet_holder.take_off() #list of lists
@@ -267,27 +320,27 @@ class ResilientModule(object):
                         #print "dsts", dsts
 
                         for match_item in dsts:
-                            print mcolors.FAIL+"-------PACKET_MATCH READY-------"+mcolors.ENDC
+                            print mcolors.OKGREEN+"-PACKET_MATCH READY-"+mcolors.ENDC
                             dsts_ip.append(match_item.get_dst_ip())
 
-                    print "src_ip", srcs_ip
-                    print "dst_ip", dsts_ip
+                    #print "src_ip", srcs_ip
+                    #print "dst_ip", dsts_ip
 
                     if type(dsts_ip) is list:
 
                         dpid_src = self.get_dpid(srcs_ip)
-                        print "dpid_src", dpid_src
+                        #print "dpid_src", dpid_src
                         if not dpid_src:
-                            log.warning(mcolors.FAIL+" Couldn't find source DPID"+mcolors.ENDC)
+                            log.warning(mcolors.FAIL+" Couldn't find source DPID!"+mcolors.ENDC)
                             return
 
                         dsts_list = list()
                         dsts_dict = dict()
                         for dsts in dsts_ip:
                             dsts_dpid = self.get_dpid(dsts)
-                            print "dsts_dpip", dsts_dpid
+                            #print "dsts_dpip", dsts_dpid
                             if not dsts_dpid:
-                                log.warning(mcolors.FAIL+" Couldn't find destination DPID"+mcolors.ENDC)
+                                log.warning(mcolors.FAIL+" Couldn't find destination DPID!"+mcolors.ENDC)
                                 return
                             else:
                                 dsts_list.append(dsts_dpid)
@@ -308,7 +361,7 @@ class ResilientModule(object):
                         else:
                             #print "dpid_src", dpid_src
                             #print "dpid_dst", dsts_list
-                            print "dpid_dst_dict", dsts_dict
+                            #print "dpid_dst_dict", dsts_dict
 
                             import threading
 
@@ -316,40 +369,40 @@ class ResilientModule(object):
                             #print "---------------------TOPO", matrix
                             with threading.Lock():
                                 res = self.single_rpf(matrix, dpid_src, dsts_dict[dsts_ip[0]], 3)
-                            print "res1", res
+                            #print "res1", res
                             #time.sleep(1)
 
                             result_list.append(res)
                             #print "---------------------TOPO", matrix
                             with threading.Lock():
                                 res = self.single_rpf(matrix, dpid_src, dsts_dict[dsts_ip[1]], 3)
-                            print "res2", res
+                            #print "res2", res
                             #time.sleep(1)
 
                             result_list.append(res)
                             #print "---------------------TOPO", matrix
                             with threading.Lock():
                                 res = self.single_rpf(matrix, dpid_src, dsts_dict[dsts_ip[2]], 3)
-                            print "res3", res
+                            #print "res3", res
                             #time.sleep(1)
 
                             result_list.append(res)
 
-                            print "...............final", result_list
-                            print "....................", dsts_dict
+                            #print "...............final", result_list
+                            #print "....................", dsts_dict
 
-                            print mcolors.FAIL+"!!!!!!!!!MULTI STARTS HERE!!!!!!!!!!!!"+mcolors.ENDC
+                            print mcolors.OKGREEN+"-MULTI-RPF starting...-"+mcolors.ENDC
 
                             final_result_list = self.multi_rpf(result_list, matrix, dpid_src, None)
 
-                            print "FINAL_RESULT_LIST", final_result_list
+                            #print "FINAL_RESULT_LIST", final_result_list
 
                             """
                             for dst_dpid in dsts_list:
                                 self.rpf_class = ResilientPathFinder()
                                 result = self.single_rpf(matrix, dpid_src, dst_dpid, 3)
                                 result_list.append(result)
-                            print "result_list", result_list
+                            #print "result_list", result_list
                             """
 
                             #final_result_list = [[2, 5], [2, 3, 5, 6], [2, 4]]
@@ -360,29 +413,22 @@ class ResilientModule(object):
 
 
 
-            print mcolors.OKGREEN+"----------------------END------------------------"+mcolors.ENDC
+            print mcolors.OKGREEN+"-DONE-"+mcolors.ENDC
             #############################################################################################
 
         elif eth_headers != pkt.ethernet.LLDP_TYPE:     # packet.type != ARP and LLDP
 
             #self._update_topology()
             #vlan_headers = eth_headers.next #VLAN part of the Packet L2
-            #mpls_headers = vlan_headers.next #MPLS part of the packet L2.5
-
             """
             vlan_id = vlan_headers.id
             if vlan_id not in [4007,4008,4009]:
                 return
-            try:
-                mpls_label = mpls_headers.label
-            except:
-                mpls_label = None
             """
-
             #src_mac = packet.src
             #dst_mac = packet.dst
-
             """
+
             print "pkt type", packet.type
 
             print "src_mac", src_mac
@@ -419,14 +465,14 @@ class ResilientModule(object):
         pos_map = dict()
         pos_rmap = dict()
 
-        print "src: ", src, "dst: ", dst
+        #print "src: ", src, "dst: ", dst
         #print "pos0==src", src
         pos_map, pos_rmap = self.dict_mapper(1, src, pos_map, pos_rmap)
         all_dpids.remove(src)
         pos += 1
 
 	if src == dst:
-            print "src == dst", src, dst
+            #print "src == dst", src, dst
             return pos_map, pos_rmap
 
 
@@ -500,7 +546,7 @@ class ResilientModule(object):
     def route_flows(self, paths, matching, src_ip=None, dsts_ip=None, vlan_id=None, event=None):
         ''' Adds the required rules to the switch flow table:
         (final_result_list, packet_match, srcs_ip, dsts_ip)'''
-        print mcolors.FAIL+"-------->!!!!!!!!!ROUTE_FLOWS HERE!!!!!!!!!!!!<--------"+mcolors.ENDC
+        print mcolors.FAIL+"-ROUTE_FLOWS starting...-"+mcolors.ENDC
 
         #print "src_ip", src_ip
 
@@ -617,7 +663,7 @@ class ResilientModule(object):
 
         # dl_vlan=vlan_id,
         # Use idle and/or hard timeouts to help cleaning the table
-        msg.idle_timeout = 200
+        msg.idle_timeout = 10
         msg.hard_timeout = 0  #In order to avoid unnecessary messages between the switches and the controller
         msg.priority = 40
         msg.actions.append(of.ofp_action_output(port=out_port))
@@ -627,7 +673,7 @@ class ResilientModule(object):
         #print "CONN_DPIDS", self.conn_dpids
         #print "CONN_DPIDS[dpid_conn]", self.conn_dpids[dpid_conn]
 
-        print mcolors.FAIL+"----------->Forward-IP-rule----------->"+mcolors.ENDC
+        #print mcolors.FAIL+"----------->Forward-IP-rule----------->"+mcolors.ENDC
         connection = self.conn_dpids[dpid_conn]
         connection.send(msg)
 
@@ -639,13 +685,13 @@ class ResilientModule(object):
                                  nw_dst=src_ip)
 
         # Use idle and/or hard timeouts to help cleaning the table
-        msg.idle_timeout = 200
+        msg.idle_timeout = 10
         msg.hard_timeout = 0
         msg.priority = 40
         msg.actions.append(of.ofp_action_output(port=in_port))
         # msg.actions.append(of.ofp_action_output(port=of.OFPP_CONTROLLER))
 
-        print mcolors.FAIL+"<-----------Reverse-IP-rule<-----------"+mcolors.ENDC
+        #print mcolors.FAIL+"<-----------Reverse-IP-rule<-----------"+mcolors.ENDC
         connection = self.conn_dpids[dpid_conn]
         connection.send(msg)
 
@@ -658,12 +704,12 @@ class ResilientModule(object):
 
         # dl_vlan=vlan_id,
 
-        msg.idle_timeout = 200
+        msg.idle_timeout = 10
         msg.hard_timeout = 0
         msg.priority = 40
         msg.actions.append(of.ofp_action_output(port=out_port))
 
-        print mcolors.FAIL+"----------->Forward-ARP-rule----------->"+mcolors.ENDC
+        #print mcolors.FAIL+"----------->Forward-ARP-rule----------->"+mcolors.ENDC
         connection = self.conn_dpids[dpid_conn]
         connection.send(msg)
 
@@ -674,12 +720,12 @@ class ResilientModule(object):
                                  nw_src=dst_ip,
                                  nw_dst=src_ip)
 
-        msg.idle_timeout = 200
+        msg.idle_timeout = 10
         msg.hard_timeout = 0
         msg.priority = 40
         msg.actions.append(of.ofp_action_output(port=in_port))
 
-        print mcolors.FAIL+"<-----------Reverse-ARP-rule<-----------"+mcolors.ENDC
+        #print mcolors.FAIL+"<-----------Reverse-ARP-rule<-----------"+mcolors.ENDC
         connection = self.conn_dpids[dpid_conn]
         connection.send(msg)
 
@@ -757,7 +803,7 @@ class ResilientModule(object):
             row = a.tolist()
             path_row_list.append(row)
 
-        print "result -> PATH_ROW_LIST", path_row_list
+        #print "result -> PATH_ROW_LIST", path_row_list
 
         final = list()
 
@@ -777,7 +823,7 @@ class ResilientModule(object):
         import pprint
 
         array_list = list()
-        print "--------------------------------------->>>final", final
+        #print "--------------------------------------->>>final", final
 
         #Delete all srcs for each mat row
         import pprint
@@ -839,10 +885,10 @@ class ResilientModule(object):
         #print "ALL_DPIDS", all_dpids
 
         pos_dpid_map, dpid_pos_map = self.pos_mapper(all_dpids, src, dst)
-        print "pos_dpid_map", pos_dpid_map
-        print "dpid_pos_map", dpid_pos_map
+        #print "pos_dpid_map", pos_dpid_map
+        #print "dpid_pos_map", dpid_pos_map
 
-        print "dpids_matrix", dpids
+        #print "dpids_matrix", dpids
 
         #Network topology should be retrieved from controller and parsed in next format
         """
@@ -855,33 +901,33 @@ class ResilientModule(object):
 
         #all_dpids_cp = self.host_finder.get_dpids()
         all_dpids_cp = pos_dpid_map.keys()
-        print "ALL_DPIDS_CP", all_dpids_cp
+        #print "ALL_DPIDS_CP", all_dpids_cp
         num_dpids = len(all_dpids_cp)
         #print "num_dpids", num_dpids
 
         dpid_keys = pos_dpid_map.values()
         #dpid_keys.sort()
-        print "dpid_keys", dpid_keys
+        #print "dpid_keys", dpid_keys
 
         for key in dpid_keys:
-            print "KEY: ", key
-            print "dpids[key].keys()", dpids[key].keys()
+            #print "KEY: ", key
+            #print "dpids[key].keys()", dpids[key].keys()
 
             conn_row = dpids[key].keys()
 
-            print "conn_row", conn_row
+            #print "conn_row", conn_row
 
             for item in conn_row:
-                print "item", item
+                #print "item", item
                 replace = dpid_pos_map.get(item)
-                print "replace", replace
+                #print "replace", replace
                 oldindex = conn_row.index(item)
-                print "oldindex", oldindex
+                #print "oldindex", oldindex
                 conn_row.insert(oldindex, replace)
-                print "working_conn_row", conn_row
+                #print "working_conn_row", conn_row
                 conn_row.pop(conn_row.index(item))
 
-            print "------->ALTERED_conn_row", conn_row
+            #print "------->ALTERED_conn_row", conn_row
 
             #print "all_dpids_cp", all_dpids_cp
 
@@ -907,27 +953,27 @@ class ResilientModule(object):
             # Check key (dpid)
             # fOR ITEMS in difference: if item != key:
             for item in not_conn:
-                print "item, key", item, key
+                #print "item, key", item, key
                 # get position from pos_dpid_map
                 #item_pos = pos_dpid_map.values().index(item)
                 item_pos = item - 1
-                print "item, item_position", item, item_pos
+                #print "item, item_position", item, item_pos
                 # Add '0' in place of no dpid link
                 conn_row_list.insert(item_pos, 0)
-                print "current_conn_row_list", conn_row_list
+                #print "current_conn_row_list", conn_row_list
 
             #print "conn_row_list", conn_row_list
             arrays.append(numpy.array(conn_row_list))
             #print "arrays.append(numpy.array(conn_row))", arrays
 
-        print "arrays: ", arrays
+        #print "arrays: ", arrays
 
 
         #Retrieved topology must be converted into numpy.arrays -> numpy.matrix
 
         matrix_array = numpy.matrix(arrays)
-        print "pos_dpid_map", pos_dpid_map
-        print "matrix_array", matrix_array
+        #print "pos_dpid_map", pos_dpid_map
+        #print "matrix_array", matrix_array
 
         result = self.rpf_class.get_potential_paths(1, len(all_dpids_cp), matrix_array)
         #result = self.rpf_class.get_potential_paths(1, len(all_dpids_cp), matrix_array, list(), list())
@@ -952,7 +998,7 @@ class ResilientModule(object):
         import pprint
 
         array_list = list()
-        print "--------------------------------------->>>final", final
+        #print "--------------------------------------->>>final", final
         for i in final:
             array_list.append(self.rpf_class.generate_adjacency_vector(i, len(all_dpids_cp)))
 
@@ -966,13 +1012,13 @@ class ResilientModule(object):
         for i in array_list:
             array_list_2.append(i[1:len(i)-1])
 
-        pprint.pprint(array_list)
-        pprint.pprint(array_list_2)
+        #pprint.pprint(array_list)
+        #pprint.pprint(array_list_2)
         mat = numpy.matrix(array_list_2)
 
         final_result = list()
         orthogonal_vectors = self.rpf_class.get_orthogonal_vectors(mat, 3)
-        print "orthogonal_vectors", orthogonal_vectors
+        #print "orthogonal_vectors", orthogonal_vectors
 
         splitter, merger = self.rpf_class.find_places_for_nfs(orthogonal_vectors, 3)
 
@@ -983,20 +1029,20 @@ class ResilientModule(object):
             splitter = 1
 
         for ov in orthogonal_vectors:
-            print "OV", ov
+            #print "OV", ov
             ov.insert(0, 1)     #ov.insert(0, src_dpid2)
             ov.append(1)        #ov.append(dst_dpid2)
 
         if len(orthogonal_vectors) == flows:
-            print "The computated result was that the paths to be taken are: ", orthogonal_vectors  #paths
+            print "The computated result enables resilient paths to be taken" # orthogonal_vectors  #paths
         else:
             print "Not enough resilient paths calculated, there should be a splitter on node %d and a merger on %d" %(splitter, merger)
 
-        print "ORTHOGONAL_VECTORS: ", orthogonal_vectors
+        #print "ORTHOGONAL_VECTORS: ", orthogonal_vectors
 
         dpid_paths = self.pos_to_dpid(orthogonal_vectors, pos_dpid_map)
         pos_dpid_map = {}
-        print "dpid_paths", dpid_paths
+        #print "dpid_paths", dpid_paths
 
         return dpid_paths
 
@@ -1007,22 +1053,22 @@ class ResilientModule(object):
         - Network topology ()
         - End points (src and (dsts))
         """
-        print "ALL_DPIDS", dpids.keys()
+        #print "ALL_DPIDS", dpids.keys()
 
-        print "dpids_matrix", dpids
-        print "dpid source", src
+        #print "dpids_matrix", dpids
+        #print "dpid source", src
 
         src_index = dpids.keys().index(src)
-        print "src-INDEX", src_index
+        #print "src-INDEX", src_index
 
         A_array, B_array, C_array = self.paths_to_arrays(paths, dpids)
 
-        print "ARRAY A", A_array
-        print "ARRAY B", B_array
-        print "ARRAY C", C_array
+        #print "ARRAY A", A_array
+        #print "ARRAY B", B_array
+        #print "ARRAY C", C_array
 
         lengths = self.paths_length(paths)
-        print "LENGTHS", lengths
+        #print "LENGTHS", lengths
 
         #Create matrixes
 
@@ -1030,33 +1076,33 @@ class ResilientModule(object):
         B_matrix = self.matrixer(B_array, src_index)
         C_matrix = self.matrixer(C_array, src_index)
 
-        print "MATRIX A", A_matrix
-        print "MATRIX B", B_matrix
-        print "MATRIX C", C_matrix
+        #print "MATRIX A", A_matrix
+        #print "MATRIX B", B_matrix
+        #print "MATRIX C", C_matrix
 
-        print "BuC Array", B_array+C_array
-        print "AuC Array", A_array+C_array
+        #print "BuC Array", B_array+C_array
+        #print "AuC Array", A_array+C_array
 
         MAT_BuC = self.matrixer(B_array+C_array, src_index)
         MAT_AuC = self.matrixer(A_array+C_array, src_index)
 
-        print "MAT_BuC", MAT_BuC
-        print "MAT_AuC", MAT_AuC
+        #print "MAT_BuC", MAT_BuC
+        #print "MAT_AuC", MAT_AuC
 
-        print "- Get Transposed mats -"
-        print "Transposed MAT_BuC", MAT_BuC.T
-        print "Transposed MAT_AuC", MAT_AuC.T
+        #print "- Get Transposed mats -"
+        #print "Transposed MAT_BuC", MAT_BuC.T
+        #print "Transposed MAT_AuC", MAT_AuC.T
 
         #orthogonal_BuC = A_matrix.dot(MAT_BuC.T)
         #orthogonal_AuC = B_matrix.dot(MAT_AuC.T)
         orthogonal_BuC = A_matrix * (MAT_BuC.T)
         orthogonal_AuC = B_matrix * (MAT_AuC.T)
 
-        print "Orthogonal BuC: ", orthogonal_BuC
-        print "Orthogonal AuC: ", orthogonal_AuC
+        #print "Orthogonal BuC: ", orthogonal_BuC
+        #print "Orthogonal AuC: ", orthogonal_AuC
 
         orthogonal_sum = orthogonal_BuC + orthogonal_AuC
-        print "SUM?", orthogonal_sum
+        #print "SUM?", orthogonal_sum
 
         """
         orthogonal_vectors = self.rpf_class.get_orthogonal_vectors(None, 3)
@@ -1068,16 +1114,16 @@ class ResilientModule(object):
             #print "ranger i", range(0, lengths[0])
             #print "ranger j", range(lengths[0], lengths[1]+lengths[2])
             for row in range(0, lengths[0]):
-                print "ROW in A_matrix", row
+                #print "ROW in A_matrix", row
                 for i in range(0, lengths[0]):
-                    print "1.i - orthogonal_sum[row, i]", i, "-", orthogonal_sum[row, i]
+                    #print "1.i - orthogonal_sum[row, i]", i, "-", orthogonal_sum[row, i]
                     if orthogonal_sum[row, i] == 0:
                         for j in range(lengths[0], lengths[1]+lengths[2]):
-                            print "2. j - orthogonal_sum[row, j]", j, "-", orthogonal_sum[row, j]
+                            #print "2. j - orthogonal_sum[row, j]", j, "-", orthogonal_sum[row, j]
                             if orthogonal_sum[row, j] == 0:
-                                print "I, J, ROW", i, j, row
+                                #print "I, J, ROW", i, j, row
                                 j = j-(lengths[1])
-                                print "subbed J", j
+                                #print "subbed J", j
                                 return i, j, row
             #print "I,J ROW", i, j, row
             raise Exception("Failed")
@@ -1090,7 +1136,7 @@ class ResilientModule(object):
         orthogonal_vectors.append(B_array[i].tolist())
         orthogonal_vectors.append(C_array[j].tolist())
 
-        print "orthogonal_vectors", orthogonal_vectors
+        #print "orthogonal_vectors", orthogonal_vectors
 
         dpid_paths = list()
 
@@ -1101,18 +1147,18 @@ class ResilientModule(object):
             pos = 0
             for item in vector:
                 if item == 1:
-                    print "vindex", pos
-                    print "item", item, vector
+                    #print "vindex", pos
+                    #print "item", item, vector
                     item_dpid = dpids.keys()[pos]
-                    print "item_dpid", item_dpid
+                    #print "item_dpid", item_dpid
                     dpid_row.append(item_dpid)
                 pos += 1
 
             dpid_paths.append(dpid_row)
-            print "current_conn_row_list", dpid_paths
+            #print "current_conn_row_list", dpid_paths
 
 
-        print "dpid_paths", dpid_paths
+        #print "dpid_paths", dpid_paths
 
         return dpid_paths
 
