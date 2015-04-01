@@ -11,14 +11,15 @@ def prepare_environment():
     path = "/".join(path[0:4])
     print "path", path
     sys.path.append(path)
+    return True
 
-    #Cleaning DBs
+def clean_db():
+    # Cleaning DBs
     command = "rm -rf serverfile"
     try:
             subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     except:
             subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
-
     return True
 
 def start_server(mgmt_ip, mgmt_port, data_ip, data_port):
@@ -32,5 +33,10 @@ if __name__ == "__main__":
     prepare_environment()
     from distributed.storage.src.module.server.manager import ServerManager
     start_server(sys.argv[1], int(sys.argv[2]), sys.argv[3], int(sys.argv[4]))
+    try:
+        if sys.argv[5] != "persisted":
+            clean_db()
+    except:
+        pass
     while True:
         continue
