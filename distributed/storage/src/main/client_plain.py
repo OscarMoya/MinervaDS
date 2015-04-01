@@ -65,8 +65,9 @@ def get_client(mgmt_ip=None,mgmt_port=9797,data_ip="10.10.100.100",data_port=969
     id = "Server-" + str(random.randint(1,1000))
     client_manager = ClientManager(id=id)
     client_manager.start(mgmt_ip, mgmt_port, data_ip, data_port)
-    pid = os.getpid()
-    ThreadManager.start_method_in_new_thread(timer, [pid])
+    # XXX Only needed for metrics
+    #pid = os.getpid()
+    #ThreadManager.start_method_in_new_thread(timer, [pid])
     return client_manager
 
 
