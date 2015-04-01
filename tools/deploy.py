@@ -1,6 +1,7 @@
 import os
 import paramiko
 import sys
+import time
 
 def print_error(message):
     print "\033[1;31m%s\033[1;0m" % str(message)
@@ -24,34 +25,35 @@ def get_ssh_client_and_connect(ip):
 
 def start_server_a():
     ds_server_a_ip = SERVER_A_IP
-    process_command = "python server.py " + ds_server_a_ip + " 9797 10.10.100.40 9696"
+    process_command = "python server.py " + ds_server_a_ip + " 9797 10.10.100.40 9696 >/dev/null 2>/dev/null &"
     start_server_a_command = "cd /home/MinervaDS/distributed/storage/src/main/ && " + process_command
     server = send_command_to_client(ds_server_a_ip, start_server_a_command)
     return server
 
 def start_server_b():
     ds_server_b_ip = SERVER_B_IP
-    process_command = "python server.py " + ds_server_b_ip + " 9797 10.10.100.50 9696"
+    process_command = "python server.py " + ds_server_b_ip + " 9797 10.10.100.50 9696 >/dev/null 2>/dev/null &"
     start_server_b_command = "cd /home/MinervaDS/distributed/storage/src/main/ && " + process_command
     server = send_command_to_client(ds_server_b_ip, start_server_b_command) 
     return server
 
 def start_server_c():
     ds_server_c_ip = SERVER_C_IP
-    process_command = "python server.py " + ds_server_c_ip + " 9797 10.10.100.10 9696"
+    process_command = "python server.py " + ds_server_c_ip + " 9797 10.10.100.10 9696 >/dev/null 2>/dev/null &"
     start_server_c_command = "cd /home/MinervaDS/distributed/storage/src/main/ && " + process_command
     server = send_command_to_client(ds_server_c_ip, start_server_c_command)   
     return server
 
 def start_controller_manager():
     ds_controller_ip = CONTROLLER_IP
-    process_command = "python controller.py " + ds_controller_ip + " 9797"
+    process_command = "python controller.py " + ds_controller_ip + " 9797 >/dev/null 2>/dev/null &"
     start_controller_manager_command = "cd /home/MinervaDS/distributed/storage/src/main/ && " + process_command
     controller = send_command_to_client(ds_controller_ip, start_controller_manager_command)
     return controller
 
 def start_openflow_controller():
     ds_controller_ip = CONTROLLER_IP
+#    start_openflow_controller_command = "cd /home/pox/ && python pox.py --verbose openflow.of_01 --port=6634 forwarding.rpf_app &  && cd"
     process_command = "python pox.py --verbose openflow.of_01 --port=6634 forwarding.rpf_app >/dev/null 2>/dev/null &"
     start_openflow_controller_command = "cd /home/pox/ && " + process_command
     controller = send_command_to_client(ds_controller_ip, start_openflow_controller_command)
@@ -68,6 +70,18 @@ def stop_pid_command(process_name):
 def stop_pid(ip, process_name):
     shell = get_ssh_client_and_connect(ip)
     a,b,c = shell.exec_command(stop_pid_command(process_name))
+#    # Remove PID of active server/component
+#    a,b,c = shell.exec_command("ps aux | grep \"%s\"" % process_name)
+#    myList = b.readlines()
+#    # Remove SSH process
+##    a,b,c = shell.exec_command("ps aux | grep \"bash -c\"")
+##    myList.extend(b.readlines())
+#    pid = None
+#    for elem in myList:
+#        if process_name in elem:
+#            pid = elem.split(" ")[5]
+#            if pid:
+#                a,b,c = shell.exec_command("kill -9 %s" %str(pid))
 
 def stop_pid_local(process_name):
     os.system(stop_pid_command(process_name))
@@ -76,8 +90,10 @@ def start_system():
     print_info("Starting system...")
     print "Starting OF controller"
     start_openflow_controller()
+    time.sleep(20)
     print "Starting OF controller manager"
     controller = start_controller_manager()
+    time.sleep(1)
     print "Starting servers"
     server_a = start_server_a()
     server_b = start_server_b()
@@ -88,6 +104,7 @@ def restart_system():
     stop_system()
     print_info("Restarting OF controller manager")
     controller = start_controller_manager()
+    time.sleep(1)
     print "Restarting servers"
     server_a = start_server_a()
     server_b = start_server_b()
