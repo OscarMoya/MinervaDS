@@ -6,6 +6,8 @@ class MatchManager:
 
     def check_in(self, match):
         root = match.get_root()
+        
+
         if root in self.matches.keys():
             if not match in self.matches.get(root):
                 self.matches[root].append(match)
@@ -16,10 +18,9 @@ class MatchManager:
         result = list()
         departed_roots = list()
         for root in self.matches:
-            #print "root", root
-            #print "len(self.matches[root])", len(self.matches.get(root))
+            
             if len(self.matches.get(root)) == 3:
-                #print "enters"
+                
                 result.append(self.matches[root])
                 departed_roots.append(root)
         for root in departed_roots:
@@ -40,14 +41,16 @@ class Match:
         self.ip_tos = None
         self.l3_src_port = None
         self.l3_dst_port = None
+        self.match_type = match_type
         
         if match_type == "client":
             self.__root_headers = {"in_port": self.get_in_port, "src_mac": self.get_src_mac, "eth_type": self.get_eth_type, "vlan_id": self.get_vlan_id, "src_ip": self.get_src_ip}
         else:
-            self.__root_headers = {"in_port": self.get_in_port, "src_mac": self.get_src_mac, "eth_type": self.get_eth_type, "vlan_id": self.get_vlan_id, "dst_ip": self.get_dst_ip}
+            self.__root_headers = {"eth_type": self.get_eth_type, "vlan_id": self.get_vlan_id, "src_ip": self.get_src_ip}
 
     def get_root(self):
-        root = Match()
+        
+        root = Match(self.match_type)
         for attr in self.__root_headers:
             setattr(root, attr, self.__root_headers[attr]())
         return root
@@ -86,7 +89,7 @@ class Match:
         return self.get_l3_dst_port()
 
     def __hash__(self):
-        #Java like implementation... hope it works
+        
         result = 31 * 1
         attrs = self.__dict__
         for attr in attrs:

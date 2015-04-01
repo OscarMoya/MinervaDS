@@ -9,19 +9,6 @@ import threading
 from distributed.storage.src.util.threadmanager import ThreadManager
 from distributed.storage.src.util.service_thread import ServiceThread
 
-def logger(message):
-    ServiceThread.start_in_new_thread(logger_thread, message)
-
-def logger_thread(message, log_file="/home/MinervaDS/client_perf.txt"):
-    if os.path.exists(log_file):
-        l = open(log_file, 'a')
-        l.write(message+"\n")
-
-    else:
-        l = open(log_file, 'wb')
-        l.write(message+"\n")
-    l.close()
-
 def prepare_environment():
     path = os.path.abspath(__file__)
     print path
@@ -47,25 +34,6 @@ def start_client(mgmt_ip, mgmt_port, data_ip, data_port):
     controller_manager = ClientManager(id=id)
     controller_manager.start(mgmt_ip, mgmt_port, data_ip, data_port)
     return controller_manager
-
-def timer(pid):
-    try:
-        while True:
-            x = get_cpumem(pid)
-            if not x:
-                print("no such process")
-                exit(1)
-            message = "%.2f\t%.2f" % x
-            logger(message)
-            time.sleep(0.5)
-    except KeyboardInterrupt:
-        print
-        exit(0)
-
-def get_cpumem(pid):
-    d = [i for i in commands.getoutput("ps aux").split("\n")
-        if i.split()[1] == str(pid)]
-    return (float(d[0].split()[2]), float(d[0].split()[3])) if d else None
 
 if __name__ == "__main__":
     prepare_environment()

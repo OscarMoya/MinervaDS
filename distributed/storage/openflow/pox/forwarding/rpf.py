@@ -27,31 +27,29 @@ class ResilientPathFinder():
         current_path = copy.deepcopy(path)
         current_path.append(dst_dpid)
 
-        #print "..............................src_dpid", src_dpid
-
+        
         if dst_dpid == src_dpid:
-            #print "dst_dpid == src_dpid"
+            
             return current_path
 
         if matrix.max() == 0:
-            #print "matrix.max() == 0"
+            
             return None
 
         dst_array = self.__get_dpid_array(dst_dpid, len(matrix))
-        #print "dst_array", dst_array
+        
         neo_matrix = copy.deepcopy(matrix)
-        #print "neo_matrix", neo_matrix
+        
         neo_matrix[dst_dpid - 1].fill(0)
         candidates = self.__get_candidates_to_dst(dst_array, matrix)
-        #print "candidates", candidates
+        
 
         for candidate in candidates:
-            #print "candidate - candidates", candidate, "-", candidates
-            #print "self.get_potential_paths(src_dpid, candidate)", src_dpid, candidate
+            
             circuit = self.get_potential_paths(src_dpid, candidate, neo_matrix, current_path, result)
             if circuit:
                 if not type(circuit[0]) == list:
-                    #print "..............................circuit", circuit
+                    
                     result.append(circuit)
         return result
 
@@ -76,8 +74,7 @@ class ResilientPathFinder():
 
     def find_places_for_nfs(self, resilient_paths, n_flows, used_nodes=list()):
         required_nf_pairs = n_flows - len(resilient_paths)
-        print "required_nf_pairs", required_nf_pairs
-
+        
         if required_nf_pairs == 0:
             return None, None
 
@@ -106,21 +103,21 @@ class ResilientPathFinder():
         empty_array = list("0" * length)
         adj_array = numpy.array(empty_array, dtype=int)
 
-        #print "........................................", array
-
+        
         for i in array:
             adj_array.put(i-1, 1)
 
         return adj_array.tolist()
 
     def get_orthogonal_vectors(self, mat, n_flows):
-        print "- Get Orthogonal Vectors Method -"
-        print "Init Mat: ", mat
-        orthogonal_map = mat.dot(mat.T)
+        
+        mat_T = mat.T
+        orthogonal_map = mat * mat.T
+        
         orthogonal_vector_list = list()
-        print "Orthogonal map: ", orthogonal_map
+        
         orthogonal_map = orthogonal_map.T       #Transposed for easy vector indexing
-        print "ORTHOGONAL MAP Transposed: ", orthogonal_map
+        
 
         for row in orthogonal_map:
             if row.sum() == 0:
@@ -129,11 +126,11 @@ class ResilientPathFinder():
 
             orthogonal_vector_list.append(row.tolist()[0].count(0))
 
-        print "ORTHOGONAL_VECTOR_LIST: ", orthogonal_vector_list
+        
         max_orthogonal_vectors = max(orthogonal_vector_list)
         best_row = orthogonal_map[orthogonal_vector_list.index(max_orthogonal_vectors)]
         src_vector = orthogonal_vector_list.index(max_orthogonal_vectors)
-        print "BEST_ROW: ", best_row
+        
         indexes = list()
         best_row = best_row.tolist()[0]
 
@@ -143,7 +140,7 @@ class ResilientPathFinder():
 
         indexes.insert(src_vector, src_vector)
         result = list()
-        print "Indexes: ", indexes
+        
 
         for i in indexes:
            result.append(mat[i].tolist()[0])

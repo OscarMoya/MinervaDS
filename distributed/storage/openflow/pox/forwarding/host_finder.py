@@ -22,11 +22,11 @@ class Hostfinder():
 
         for link in self.topology:
             if link.dpid1 not in net_dpids:
-                #print "dpid1", link.dpid1
+                
                 net_dpids.append(link.dpid1)
             else:
                 continue
-        #print "net_dpids", net_dpids
+        
         return net_dpids
 
     def topology_to_matrix(self):
@@ -34,16 +34,12 @@ class Hostfinder():
         table = {}
 
         for link in self.topology:
-            #print "link", link
-            #print "link.dpid1", link.dpid1
-            #print "link.dpid2", link.dpid2
-            #print "link.port1", link.port1
+            
             try:
                 table[link.dpid1].update({link.dpid2: link.port1})
             except:
                 table[link.dpid1] = ({link.dpid2: link.port1})
-
-        #print "TABLE_MATRIX", table
+        
         return table
 
     def update_topology(self):
@@ -80,9 +76,6 @@ class Hostfinder():
         new_host = Host(ip_adr, mac_adr, dpid, port, htype)
         log.info(' Host detected: %s', new_host)
         self.hosts.append(new_host)
-        print "new_host: ", new_host
-        #print "HOSTS_LIST_UPDATED: ", self.hosts
-        #self._update_topology(new_host)
         return
 
     def remove_host(self, ip_adr):
