@@ -27,8 +27,10 @@ def prepare_environment():
     path = path.split("/")
     path = "/".join(path[0:3])
     sys.path.append(path)
+    return True
 
-    #Cleaning DBs
+def clean_db():
+    # Cleaning DBs
     command = "rm -rf controllerendpoint controllerlocation"
     try:
             subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
@@ -64,8 +66,13 @@ if __name__ == "__main__":
     prepare_environment()
     from distributed.storage.src.module.controller.manager import ControllerManager
     start_controller(sys.argv[1], int(sys.argv[2]))
-    pid = os.getpid()
-    ThreadManager.start_method_in_new_thread(timer, [pid])
+    #pid = os.getpid()
+    #ThreadManager.start_method_in_new_thread(timer, [pid])
+    try:
+        if sys.argv[3] != "persisted":
+            clean_db()
+    except:
+        pass
     while True:
         continue
 

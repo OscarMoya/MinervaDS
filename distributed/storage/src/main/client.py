@@ -26,8 +26,10 @@ def prepare_environment():
     path = path.split("/")
     path = "/".join(path[0:4])
     sys.path.append(path)
+    return True
 
-    #Cleaning DBs
+def clean_db():
+    # Cleaning DBs
     command = "rm -rf clientfile"
     try:
             subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
@@ -64,5 +66,10 @@ if __name__ == "__main__":
     prepare_environment()
     from distributed.storage.src.module.client.manager import ClientManager
     start_client(sys.argv[1], int(sys.argv[2]), sys.argv[3], int(sys.argv[4]))
+    try:
+        if sys.argv[5] != "persisted":
+            clean_db()
+    except:
+        pass
     while True:
         continue
