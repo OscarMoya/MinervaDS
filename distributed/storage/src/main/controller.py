@@ -69,10 +69,14 @@ if __name__ == "__main__":
     #pid = os.getpid()
     #ThreadManager.start_method_in_new_thread(timer, [pid])
     try:
-        if sys.argv[3] != "persisted":
+        persisted_data = None
+        if len(sys.argv) >= 4:
+            persisted_data = sys.argv[3]
+        if persisted_data == None or persisted_data != "persisted":
             clean_db()
     except:
-        pass
+        pass   
+       
     while True:
         continue
 

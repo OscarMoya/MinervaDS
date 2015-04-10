@@ -100,6 +100,7 @@ class ControllerManager:
 
     def __mount_endpoint(self, id, type):
         endpoint = self.active_endpoints.get(id)
+        print "endpoint", endpoint
         mounted_endpoint = xmlrpclib.ServerProxy(endpoint.get("%s_url" % type))
         return mounted_endpoint
 
