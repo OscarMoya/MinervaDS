@@ -72,7 +72,8 @@ class ServerManager:
         result = ThreadManager.start_method_in_new_thread(self.__north_backend.join, [self.__id, self.__type, mgmt_url, data_url])
         if self.__db:
             self.__db.load()
-        return result
+        # XMLRPCserver does not support receiving a "None" result
+        return result or ""
 
     def alert(self, func, **kwargs):
         # TODO: Implement

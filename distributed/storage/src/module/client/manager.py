@@ -75,15 +75,12 @@ class ClientManager:
 
 
     def start(self, mgmt_ip, mgmt_port, data_ip, data_port):
-
         self.__south_backend.start(mgmt_ip, mgmt_port)
         self.__west_backend.start(data_ip, data_port)
         self.__start_north_backend()
         self.__db.load()
-
-        data_url = "http://"+ data_ip + ":" + str(data_port)
-        mgmt_url = "http://"+ mgmt_ip + ":" + str(mgmt_port)
-
+        data_url = "http://" + data_ip + ":" + str(data_port)
+        mgmt_url = "http://" + mgmt_ip + ":" + str(mgmt_port)
         result = ThreadManager.start_method_in_new_thread(self.__north_backend.join, [self.__id, self.__type, mgmt_url, data_url])
 
     def upload_file(self, file, requirements=2):
@@ -102,26 +99,22 @@ class ClientManager:
         message = "Start - Time: %s " % (get_time_now())
         logger(message)
 
-        print "Clinet ID", self.__id
+        print "Client ID", self.__id
         chunks = self.__north_backend.read_request(self.__id, file_id)
         local_request = dict()
         local_request[file_id] = dict()
         for chunk_id in chunks:
             local_request.get(file_id)[chunk_id] = False
-
         self.__requests.update(local_request)
         self.__ready[file_id] = False
         while not self.__ready[file_id]:
             continue
-        
         print "Two chunks received at least"
         print "File id:", file_id
         chunks = self.__file_db.filter(file_id=file_id)
         file = self.__construct_file(chunks)
-       
         message = "End - Time: %s " % (get_time_now())
-        logger(message)        
-
+        logger(message)
         return file
 
     def __configure_south_backend(self):
@@ -169,7 +162,6 @@ class ClientManager:
 
         chunk_b = chunk_list.pop(0)
         chunk_b_value = chunk_b.get("value")
-        print "value", chunk_b_value
         f = open(chunk_b_value, "rb")
         chunk_b_data = xmlrpclib.Binary(f.read())
         f.close()
@@ -178,7 +170,6 @@ class ClientManager:
 
         chunk_c = chunk_list.pop(0)
         chunk_c_value = chunk_c.get("value")
-        print "value", chunk_c_value
         f = open(chunk_c_value, "rb")
         chunk_c_data = xmlrpclib.Binary(f.read())
         f.close()

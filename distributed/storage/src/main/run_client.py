@@ -1,3 +1,4 @@
+import os
 import sys
 
 ALLOWED_COMMANDS = ["upload", "download"]
@@ -21,7 +22,17 @@ def upload_data(client, path_or_data):
         f.close()
     except:
         data = path_or_data
-    return client.upload_file(data)
+    upload_id = client.upload_file(data)
+    # Clean up after sending data
+    flows_location = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../../..")
+    try:
+        for flow in ["a", "b", "c"]:
+            flow_file = os.path.join(flows_location, "%s_flow_file" % flow)
+            if os.path.isfile(flow_file):
+                os.remove(flow_file)
+    except Exception as e:
+        print e
+    return upload_id
 
 def download_data(client, file_id):
     savedata = client.download_file(file_id)
