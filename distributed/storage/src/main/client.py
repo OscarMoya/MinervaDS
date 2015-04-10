@@ -67,7 +67,10 @@ if __name__ == "__main__":
     from distributed.storage.src.module.client.manager import ClientManager
     start_client(sys.argv[1], int(sys.argv[2]), sys.argv[3], int(sys.argv[4]))
     try:
-        if sys.argv[5] != "persisted":
+        persisted_data = None
+        if len(sys.argv) >= 6:
+            persisted_data = sys.argv[5]
+        if persisted_data == None or persisted_data != "persisted":
             clean_db()
     except:
         pass
