@@ -88,11 +88,13 @@ class NFManager:
         del a_hex
         del b_hex
       
-        if axorb_hex[-1] in '|L':          
+        #if axorb_hex[-1] in '|L':          
+        if True:   
             if (len(axorb_hex) % 2) != 0:
                 axorb_hex = axorb_hex[:-1]
             else:
                 axorb_hex = "0" + axorb_hex[:-1]
+        
         axorb_flow_file = binascii.unhexlify(axorb_hex)
         self.store_temp(axorb_flow_file, temp_c)
 
@@ -148,6 +150,14 @@ class NFManager:
             del a_str
             del b_str
         result = a_hex + b_hex
+        
+        if (len(result) % 2) != 0:
+                
+                print "Odd-lenght"
+                print len(result)
+                print result
+                #result = "0" + result
+      
         self.__full_chunk = binascii.unhexlify(result)
         return self.__full_chunk
 

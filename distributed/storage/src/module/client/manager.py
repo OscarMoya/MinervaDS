@@ -41,6 +41,7 @@ class ClientManager:
     def __init__(self, db=None, id=None):
         if not id:
             id = uuid.uuid4()
+
         if not db:
             db = DefaultEndPointDB()
 
@@ -59,7 +60,8 @@ class ClientManager:
         self.__west_backend = None
         self.__south_backend = None
 
-        self.__id = id
+        #self.__id = id
+        self.__id = "1"
         self.__db = db
 
         self.__requests = dict()
@@ -91,6 +93,7 @@ class ClientManager:
         file_size = "Default"
         servers = self.__north_backend.write_request(self.__id, file_size, requirements)
         result = self.__send(servers, file)
+        print "Client ID", self.__id
         return result
 
     def download_file(self, file_id):
@@ -99,6 +102,7 @@ class ClientManager:
         message = "Start - Time: %s " % (get_time_now())
         logger(message)
 
+        print "Clinet ID", self.__id
         chunks = self.__north_backend.read_request(self.__id, file_id)
         local_request = dict()
         local_request[file_id] = dict()

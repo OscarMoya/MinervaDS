@@ -24,7 +24,12 @@ def upload_data(client, path_or_data):
     return client.upload_file(data)
 
 def download_data(client, file_id):
-    return client.download_file(file_id)
+    savedata = client.download_file(file_id)
+
+    f = open("/tmp/minerva_ds__%s" % str(file_id), "w")
+    f.write(savedata)
+    f.close()
+    return "File saved under %s" % str(f.name)
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
