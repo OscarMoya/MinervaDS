@@ -1,23 +1,35 @@
 #!/usr/bin/env python
+
 import pygtk
 pygtk.require('2.0')
 import gtk
+import os
+
+from entry_dialog import EntryDialog
+
 
 class MinervaGUI:
 
     def __init__(self):
 
         #main window
-        app_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        app_window.set_size_request(800, 600)
-        app_window.set_border_width(10)
-        app_window.set_title("Minerva Demo GUI")
-        app_window.connect("delete_event", lambda w, e: gtk.main_quit())
+        self.app_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.app_window.set_border_width(10)
+        self.app_window.set_title("Minerva Demo GUI")
 
+        # Center window and set proper size
+        self.app_window.set_position(gtk.WIN_POS_CENTER)
+        self.app_window.set_size_request(800, 600)
+        self.app_window.set_default_size(min(gtk.gdk.screen_width(), 800), min(600, gtk.gdk.screen_height()))
+        # Bind Escape to exit
+        self.bind_element_to_key_with_method("Escape", self.app_window, gtk.main_quit)
+        self.app_window.connect("delete_event", lambda w, e: gtk.main_quit())
+        #self.app_window.connect("check-resize", lambda w: w.resize(100, 100))
+        self.app_window.set_resizable(False)
 
         #window layouts
         vbox_app = gtk.VBox(False, 10)
-        app_window.add(vbox_app)
+        self.app_window.add(vbox_app)
         vbox_app.show()
 
 
@@ -154,7 +166,7 @@ class MinervaGUI:
         #frame_canvas.set_shadow_type(gtk.SHADOW_IN)
 
         canvas = gtk.Image()
-        pixbuf = gtk.gdk.pixbuf_new_from_file("images/backup.png")
+        pixbuf = gtk.gdk.pixbuf_new_from_file("images/goff_topology.png")
         scaled_buf = pixbuf.scale_simple(375, 350, gtk.gdk.INTERP_BILINEAR)
         canvas.set_from_pixbuf(scaled_buf)
         vbox_canvas.add(frame_canvas)
@@ -186,6 +198,7 @@ class MinervaGUI:
         button_env_start_vs = gtk.Button("ENV START")
         button_env_stop_vs = gtk.Button("ENV STOP")
         button_play_vs = gtk.Button("PLAY")
+        button_play_vs.connect("button-press-event", self.upload_file)
         button_stop_vs = gtk.Button("STOP")
         table_vs_deploy.attach(button_env_start_vs, 0, 1, 0, 1)
         button_env_start_vs.show()
@@ -199,7 +212,9 @@ class MinervaGUI:
         button_env_start_ds = gtk.Button("ENV START")
         button_env_stop_ds = gtk.Button("ENV STOP")
         button_upload_ds = gtk.Button("UPLOAD")
+        button_upload_ds.connect("button-press-event", self.upload_file)
         button_download_ds = gtk.Button("DOWNLOAD")
+        button_download_ds.connect("button-press-event", self.set_file_id)
         table_ds_deploy.attach(button_env_start_ds, 0, 1, 0, 1)
         button_env_start_ds.show()
         table_ds_deploy.attach(button_env_stop_ds, 1, 2, 0, 1)
@@ -307,10 +322,48 @@ class MinervaGUI:
         """
         button_close.grab_default()
         """
-        app_window.show()
+        self.app_window.show()
+
+        self.app_window.window.property_change("_NET_WM_STRUT", "CARDINAL", 32,
+            gtk.gdk.PROP_MODE_REPLACE, [0, 0, 0, 0])
 
         return
 
+    def bind_element_to_key_with_method(self, key, element, method):
+        accelgroup = gtk.AccelGroup()
+        key, modifier = gtk.accelerator_parse(key)
+        accelgroup.connect_group(key,
+                                            modifier,
+                                            gtk.ACCEL_VISIBLE,
+                                            method)
+        getattr(element, "add_accel_group")(accelgroup)
+
+    def upload_file(self, window, event):
+        chooser = gtk.FileChooserDialog(title = "Upload a file",
+                                        parent = self.app_window,
+                                        action = gtk.FILE_CHOOSER_ACTION_OPEN,
+                                        buttons = (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK)
+#                                        buttons = ("OK",True,"Cancel",False)
+#                                        buttons = (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
+                                        )
+        initial_path = os.path.dirname(os.path.realpath(__file__))
+        chooser.set_current_folder(initial_path)
+        result = chooser.run()
+        
+        filename = None
+        if result in [gtk.RESPONSE_ACCEPT, gtk.RESPONSE_OK]:
+            filename = chooser.get_filename()
+            print "filename: ", filename
+        chooser.destroy()
+        return filename
+
+    def set_file_id(self, window, event):
+        entry = EntryDialog()
+        # TODO Add OK and Cancel buttons to the EntryDialog
+        result = entry.run()
+        print result
+        return result
+#        result.destroy()
 
 def main():
     gtk.main()
@@ -319,4 +372,3 @@ def main():
 if __name__ == "__main__":
     MinervaGUI()
     main()
-
