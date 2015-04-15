@@ -30,16 +30,18 @@ class MinervaGUI:
         table_body.show()
         vbox_app.add(table_body)
 
-        vbox_frames = gtk.VBox(False, 5)
+        vbox_frames = gtk.VBox(False, 15)
         vbox_frames.show()
         table_body.attach(vbox_frames, 0, 1, 0, 4, 0, 0, 0, 0)
 
         vbox_canvas = gtk.VBox(False, 5)
-        valign = gtk.Alignment(0, 1, 0, 0)
-        vbox_canvas.pack_start(valign)
         vbox_canvas.show()
         table_body.attach(vbox_canvas, 1, 2, 0, 4, 0, 0, 0, 0)
 
+        #alingnments
+        align = gtk.Alignment(0.2, 0.1, 0.7, 0.3)
+        vbox_frames.pack_start(align, True, True, 0)
+        #align.show()
 
         #logos
         logo1 = gtk.Image()
@@ -104,8 +106,10 @@ class MinervaGUI:
 
 
         #main frames
-        frame_vs = gtk.Frame("Video Streaming")
-        frame_ds = gtk.Frame("Distributed Storage")
+        frame_vs = gtk.Frame("VIDEO STREAMING")
+        frame_vs.set_label_align(0.5, 1)
+        frame_ds = gtk.Frame("DISTRIBUTED STORAGE")
+        frame_ds.set_label_align(0.5, 1)
         frame_vs.set_shadow_type(gtk.SHADOW_IN)
         frame_ds.set_shadow_type(gtk.SHADOW_IN)
 
@@ -115,13 +119,49 @@ class MinervaGUI:
         vbox_frames.add(frame_ds)
         frame_ds.show()
 
-        vbox_vs = gtk.VBox(False, 5)
-        vbox_ds = gtk.VBox(False, 5)
+        vbox_vs = gtk.VBox(False, 15)
+        vbox_ds = gtk.VBox(False, 15)
 
-        frame_vs.add(vbox_vs)
+        #frame_vs.add(vbox_vs)
+        #frame_ds.add(vbox_ds)
+        #vbox_vs.show()
+        #vbox_ds.show()
+
+
+        def callback(widget, event, data):
+            pixbuf = gtk.gdk.pixbuf_new_from_file("images/gr1.png")
+            scaled_buf = pixbuf.scale_simple(375, 350, gtk.gdk.INTERP_BILINEAR)
+            canvas.set_from_pixbuf(scaled_buf)
+            canvas.show()
+            #print event, data
+
+        def callback_back(widget, event, data):
+            pixbuf = gtk.gdk.pixbuf_new_from_file("images/backup.png")
+            scaled_buf = pixbuf.scale_simple(375, 350, gtk.gdk.INTERP_BILINEAR)
+            canvas.set_from_pixbuf(scaled_buf)
+            canvas.show()
+            #print event, data
+
+        ev_box_vs = gtk.EventBox()
+        ev_box_vs.connect("enter-notify-event", callback, "enter")
+        ev_box_vs.connect("leave-notify-event", callback, "leave")
+
+        ev_box_ds = gtk.EventBox()
+        ev_box_ds.connect("enter-notify-event", callback_back, "enter")
+        ev_box_ds.connect("leave-notify-event", callback_back, "leave")
+
+        ev_box_vs.add(vbox_vs)
+        ev_box_ds.add(vbox_ds)
+
         vbox_vs.show()
-        frame_ds.add(vbox_ds)
         vbox_ds.show()
+
+        ev_box_vs.show()
+        ev_box_ds.show()
+
+        frame_vs.add(ev_box_vs)
+        frame_ds.add(ev_box_ds)
+
 
 
         #inner frames
@@ -206,10 +246,22 @@ class MinervaGUI:
         button_download_ds.show()
 
         #Sim labels
-        label_vs_en = gtk.Label("ENABLE SERVER")
-        label_ds_en = gtk.Label("ENABLE SERVER")
-        label_vs_dis = gtk.Label("DISABLE SERVER")
-        label_ds_dis = gtk.Label("DISABLE SERVER")
+        label_vs_en = gtk.Label()
+        label_vs_en.set_use_markup(gtk.TRUE)
+        label_vs_en.set_markup('<span size="7000">ENABLE SERVER</span>')
+
+        label_ds_en = gtk.Label()
+        label_ds_en.set_use_markup(gtk.TRUE)
+        label_ds_en.set_markup('<span size="7000">ENABLE SERVER</span>')
+
+        label_vs_dis = gtk.Label()
+        label_vs_dis.set_use_markup(gtk.TRUE)
+        label_vs_dis.set_markup('<span size="7000">DISABLE SERVER</span>')
+
+        label_ds_dis = gtk.Label()
+        label_ds_dis.set_use_markup(gtk.TRUE)
+        label_ds_dis.set_markup('<span size="7000">DISABLE SERVER</span>')
+
 
         table_vs_failure.attach(label_vs_en, 0, 3, 0, 1, 0, 0, 0, 0)
         label_vs_en.show()
@@ -259,29 +311,47 @@ class MinervaGUI:
         table_ds_failure.attach(button_sim_dis_c_ds, 5, 6, 1, 2)
         button_sim_dis_c_ds.show()
 
+        #Widget extras (implementation)
 
-
-        """
-        #hbox_app.add(table_layout)
         hbox_app = gtk.HBox(True, 0)
-        vbox_app.add(hbox_app)
-
+        """
         button_close = gtk.Button(stock=gtk.STOCK_CLOSE)
         button_close.connect("clicked", lambda w: gtk.main_quit())
         button_close.set_flags(gtk.CAN_DEFAULT)
-        #hbox_app.pack_end(button_close, False, False, 0)
+        hbox_app.pack_end(button_close, False, False, 15)
+        """
 
+        """
+        tb = gtk.Button("EVENT",)
+        tb.set_size_request(100, 60)
+        ev_box = gtk.EventBox()
+        ev_box.connect("enter-notify-event", callback, "enter")
+        ev_box.connect("leave-notify-event", callback_back, "leave")
+        ev_box.add(tb)
+        tb.show()
+        ev_box.show()
+        #vbox_app.add(ev_box)
+        table_body.attach(ev_box, 0, 1, 4, 5, 0, 0)
+        """
+
+        label_ver = gtk.Label()
+        label_ver.set_use_markup(gtk.TRUE)
+        label_ver.set_markup('<span size="7000">v. 0.1</span>')
+        hbox_app.pack_end(label_ver, False, False, 15)
+        label_ver.show()
+        """
         extra_layout = gtk.Layout(None, None)
         extra_layout.set_size(800, 300)
-        app_window.add(extra_layout)
+        vbox_app.add(extra_layout)
         extra_layout.show()
 
-        extra_layout.put(button_close, 700, 75)
-        button_close.show()
+        extra_layout.put(button_close, 100, 75)
 
+        button_close.show()
+        """
         hbox_app.show()
         vbox_app.add(hbox_app)
-        """
+
 
         #application programs...
         """
