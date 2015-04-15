@@ -134,10 +134,44 @@ class MinervaGUI:
         vbox_vs = gtk.VBox(False, 15)
         vbox_ds = gtk.VBox(False, 15)
 
-        frame_vs.add(vbox_vs)
+        #frame_vs.add(vbox_vs)
+        #vbox_vs.show()
+        #frame_ds.add(vbox_ds)
+        #vbox_ds.show()
+
+	def callback(widget, event, data):
+            pixbuf = gtk.gdk.pixbuf_new_from_file("images/logo3.png")
+            scaled_buf = pixbuf.scale_simple(375, 350, gtk.gdk.INTERP_BILINEAR)
+            canvas.set_from_pixbuf(scaled_buf)
+            canvas.show()
+            #print event, data
+
+        def callback_back(widget, event, data):
+            pixbuf = gtk.gdk.pixbuf_new_from_file("images/backup.png")
+            scaled_buf = pixbuf.scale_simple(375, 350, gtk.gdk.INTERP_BILINEAR)
+            canvas.set_from_pixbuf(scaled_buf)
+            canvas.show()
+            #print event, data
+
+        ev_box_vs = gtk.EventBox()
+        ev_box_vs.connect("enter-notify-event", callback, "enter")
+        ev_box_vs.connect("leave-notify-event", callback, "leave")
+
+        ev_box_ds = gtk.EventBox()
+        ev_box_ds.connect("enter-notify-event", callback_back, "enter")
+        ev_box_ds.connect("leave-notify-event", callback_back, "leave")
+
+        ev_box_vs.add(vbox_vs)
+        ev_box_ds.add(vbox_ds)
+
         vbox_vs.show()
-        frame_ds.add(vbox_ds)
         vbox_ds.show()
+
+        ev_box_vs.show()
+        ev_box_ds.show()
+
+        frame_vs.add(ev_box_vs)
+        frame_ds.add(ev_box_ds)
 
 
         #inner frames
