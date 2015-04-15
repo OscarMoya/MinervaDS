@@ -139,39 +139,33 @@ class MinervaGUI:
         #frame_ds.add(vbox_ds)
         #vbox_ds.show()
 
-	def callback(widget, event, data):
-            pixbuf = gtk.gdk.pixbuf_new_from_file("images/logo3.png")
-            scaled_buf = pixbuf.scale_simple(375, 350, gtk.gdk.INTERP_BILINEAR)
-            canvas.set_from_pixbuf(scaled_buf)
-            canvas.show()
-            #print event, data
-
-        def callback_back(widget, event, data):
-            pixbuf = gtk.gdk.pixbuf_new_from_file("images/backup.png")
-            scaled_buf = pixbuf.scale_simple(375, 350, gtk.gdk.INTERP_BILINEAR)
-            canvas.set_from_pixbuf(scaled_buf)
-            canvas.show()
-            #print event, data
-
         ev_box_vs = gtk.EventBox()
-        ev_box_vs.connect("enter-notify-event", callback, "enter")
-        ev_box_vs.connect("leave-notify-event", callback, "leave")
+        ev_box_vs.connect("enter-notify-event", self.callback_vs, "enter")
+        ev_box_vs.connect("leave-notify-event", self.callback_vs, "leave")
 
         ev_box_ds = gtk.EventBox()
-        ev_box_ds.connect("enter-notify-event", callback_back, "enter")
-        ev_box_ds.connect("leave-notify-event", callback_back, "leave")
+        ev_box_ds.connect("enter-notify-event", self.callback_ds, "enter")
+        ev_box_ds.connect("leave-notify-event", self.callback_ds, "leave")
+
+        ev_box = gtk.EventBox()
+        ev_box.connect("enter-notify-event", self.callback, "enter")
+        ev_box.connect("leave-notify-event", self.callback, "leave")
 
         ev_box_vs.add(vbox_vs)
         ev_box_ds.add(vbox_ds)
+        # FIXME
+        #ev_box.add(vbox_app)
 
         vbox_vs.show()
         vbox_ds.show()
 
         ev_box_vs.show()
         ev_box_ds.show()
+        ev_box.show()
 
         frame_vs.add(ev_box_vs)
         frame_ds.add(ev_box_ds)
+        vbox_app.add(ev_box)
 
 
         #inner frames
@@ -199,14 +193,14 @@ class MinervaGUI:
         frame_canvas = gtk.AspectFrame(None, 0.5, 0.5, 1.0, True)
         #frame_canvas.set_shadow_type(gtk.SHADOW_IN)
 
-        canvas = gtk.Image()
+        self.canvas = gtk.Image()
         pixbuf = gtk.gdk.pixbuf_new_from_file("images/goff_topology.png")
         scaled_buf = pixbuf.scale_simple(375, 350, gtk.gdk.INTERP_BILINEAR)
-        canvas.set_from_pixbuf(scaled_buf)
+        self.canvas.set_from_pixbuf(scaled_buf)
         vbox_canvas.add(frame_canvas)
         frame_canvas.show()
-        frame_canvas.add(canvas)
-        canvas.show()
+        frame_canvas.add(self.canvas)
+        self.canvas.show()
 
 
         #Button tables
@@ -398,6 +392,27 @@ class MinervaGUI:
         print result
         return result
 #        result.destroy()
+
+    def callback_vs(self, widget, event, data):
+        pixbuf = gtk.gdk.pixbuf_new_from_file("images/goff_topology_vs.png")
+        scaled_buf = pixbuf.scale_simple(375, 350, gtk.gdk.INTERP_BILINEAR)
+        self.canvas.set_from_pixbuf(scaled_buf)
+        self.canvas.show()
+        #print event, data
+
+    def callback_ds(self, widget, event, data):
+        pixbuf = gtk.gdk.pixbuf_new_from_file("images/goff_topology_ds.png")
+        scaled_buf = pixbuf.scale_simple(375, 350, gtk.gdk.INTERP_BILINEAR)
+        self.canvas.set_from_pixbuf(scaled_buf)
+        self.canvas.show()
+        #print event, data
+
+    def callback(self, widget, event, data):
+        pixbuf = gtk.gdk.pixbuf_new_from_file("images/goff_topology.png")
+        scaled_buf = pixbuf.scale_simple(375, 350, gtk.gdk.INTERP_BILINEAR)
+        self.canvas.set_from_pixbuf(scaled_buf)
+        self.canvas.show()
+        #print event, data
 
 def main():
     gtk.main()

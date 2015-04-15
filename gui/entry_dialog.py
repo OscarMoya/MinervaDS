@@ -44,6 +44,7 @@ class EntryDialog(gtk.MessageDialog):
         The button press event virtual method
         """
         if event.button == -5:
+            print "..."
         return True
 
     def set_value(self, text):
