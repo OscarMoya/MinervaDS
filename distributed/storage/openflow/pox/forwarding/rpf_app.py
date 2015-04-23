@@ -197,7 +197,7 @@ class ResilientModule(object):
                     packet_match.src_ip = dst_ip
                     packet_match.dst_ip = src_ip
 
-                log.info(" --> New packet_match")
+                log.info(" --> New packet_match from %s" % src_ip)
 
                 self.packet_holder.check_in(packet_match)
                 pkt_ready = self.packet_holder.take_off() #list of lists
@@ -387,7 +387,7 @@ class ResilientModule(object):
                                  nw_dst=dst_ip)
 
         # Use idle and/or hard timeouts to help cleaning the table
-        msg.idle_timeout = 10
+        msg.idle_timeout = 300
         msg.hard_timeout = 0  #In order to avoid unnecessary messages between the switches and the controller
         msg.priority = 40
         msg.actions.append(of.ofp_action_output(port=out_port))
@@ -403,7 +403,7 @@ class ResilientModule(object):
                                  nw_dst=src_ip)
 
         # Use idle and/or hard timeouts to help cleaning the table
-        msg.idle_timeout = 10
+        msg.idle_timeout = 300
         msg.hard_timeout = 0
         msg.priority = 40
         msg.actions.append(of.ofp_action_output(port=in_port))
@@ -418,7 +418,7 @@ class ResilientModule(object):
                                  nw_src=src_ip,
                                  nw_dst=dst_ip)
 
-        msg.idle_timeout = 10
+        msg.idle_timeout = 300
         msg.hard_timeout = 0
         msg.priority = 40
         msg.actions.append(of.ofp_action_output(port=out_port))
@@ -433,7 +433,7 @@ class ResilientModule(object):
                                  nw_src=dst_ip,
                                  nw_dst=src_ip)
 
-        msg.idle_timeout = 10
+        msg.idle_timeout = 300
         msg.hard_timeout = 0
         msg.priority = 40
         msg.actions.append(of.ofp_action_output(port=in_port))

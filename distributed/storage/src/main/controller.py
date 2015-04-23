@@ -39,6 +39,7 @@ def clean_db():
     return True
 
 def start_controller(mgmt_ip, mgmt_port):
+    print "Starting Controller Manager..."
     controller_manager = ControllerManager()
     controller_manager.start(mgmt_ip, mgmt_port)
     return controller_manager

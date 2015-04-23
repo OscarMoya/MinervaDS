@@ -62,14 +62,18 @@ class ControllerManager:
 
         file_id = kwargs.get("file_id")
         client_id = kwargs.get("client_id")
-
+        
         chunk_id_a = file_id + "-A"
         chunk_id_b = file_id + "-B"
         chunk_id_c = file_id + "-AxB"
 
-        server_a = self.__file_db.filter(chunk_id=chunk_id_a, file_id=file_id, client_id=client_id, chunk_type="A")[0]
-        server_b = self.__file_db.filter(chunk_id=chunk_id_b, file_id=file_id, client_id=client_id, chunk_type="B")[0]
-        server_c = self.__file_db.filter(chunk_id=chunk_id_c, file_id=file_id, client_id=client_id, chunk_type="AxB")[0]
+        #server_a = self.__file_db.filter(chunk_id=chunk_id_a, file_id=file_id, client_id=client_id, chunk_type="A")[0]
+        #server_b = self.__file_db.filter(chunk_id=chunk_id_b, file_id=file_id, client_id=client_id, chunk_type="B")[0]
+        #server_c = self.__file_db.filter(chunk_id=chunk_id_c, file_id=file_id, client_id=client_id, chunk_type="AxB")[0]
+
+        server_a = self.__file_db.filter(chunk_id=chunk_id_a, file_id=file_id, client_id= "1", chunk_type="A")[0]
+        server_b = self.__file_db.filter(chunk_id=chunk_id_b, file_id=file_id, client_id= "1", chunk_type="B")[0]
+        server_c = self.__file_db.filter(chunk_id=chunk_id_c, file_id=file_id, client_id= "1", chunk_type="AxB")[0]
 
         server_a_id = server_a[server_a.keys()[0]].get("server_id")
         server_b_id = server_b[server_b.keys()[0]].get("server_id")
@@ -82,9 +86,24 @@ class ControllerManager:
         client = self.__endpoint_db.filter(id=client_id)[0]
         client_url = client.get(client_id).get("data_url")
 
-        ThreadManager.start_method_in_new_thread(server_a_endpoint.write_request, [client_url, chunk_id_a, self.__get_channel({})])
-        ThreadManager.start_method_in_new_thread(server_b_endpoint.write_request, [client_url, chunk_id_b, self.__get_channel({})])
-        ThreadManager.start_method_in_new_thread(server_c_endpoint.write_request, [client_url, chunk_id_c, self.__get_channel({})])
+        try:
+            ThreadManager.start_method_in_new_thread(server_a_endpoint.write_request, [client_url, chunk_id_a, self.__get_channel({})])
+        except:
+            print "Server lost"
+            pass
+
+        try:
+            ThreadManager.start_method_in_new_thread(server_b_endpoint.write_request, [client_url, chunk_id_b, self.__get_channel({})])
+        except:
+            print "Server lost"
+            pass
+
+        try:
+            ThreadManager.start_method_in_new_thread(server_c_endpoint.write_request, [client_url, chunk_id_c, self.__get_channel({})])
+        except:
+            print "Server lost"
+            pass
+
 
     def __process_write_request_event(self, **kwargs):
         #TODO: Probably just log the call
