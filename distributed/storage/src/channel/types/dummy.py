@@ -15,7 +15,10 @@ class DummyChannel(EndPointEastBase):
         return self.__medium.read(file_id)
 
     def write(self, file_data, file_id, chunk_type):
-        return self.__medium.write(file_data, file_id, chunk_type)
+        try:
+            return self.__medium.write(file_data, file_id, chunk_type)
+        except Exception as e:
+            print e
 
     def syn(self):
         pass

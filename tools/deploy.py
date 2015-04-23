@@ -65,6 +65,10 @@ def start_upload(path_to_file=None):
         default_path_to_file = path_to_file
     start_upload_command = "cd /home/MinervaDS/distributed/storage/src/main && python run_client.py upload %s" % str(default_path_to_file)
     return_code = subprocess.call(start_upload_command, shell = True)
+    try:
+        print "Uploaded file ID: %s" % str(return_code[1])
+    except:
+        pass
     return return_code
 
 def start_download(file_id):
@@ -111,12 +115,22 @@ def stop_pid(ip, process_name):
 def stop_pid_local(process_name):
     os.system(stop_pid_command(process_name))
 
+def clean_cmanager():
+    # Cleaning DBs
+    command = "rm -rf /home/MinervaDS/distributed/storage/src/main/controllerendpoint /home/MinervaDS/distributed/storage/src/main/controllerlocation"
+    try:
+            subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    except:
+            subprocess.call(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
+    return True
+
 def start_system():
     print_info("Starting system...")
     print "Starting OF controller"
     start_openflow_controller()
     time.sleep(20)
     print "Starting OF controller manager"
+    clean_cmanager()
     controller = start_controller_manager()
     time.sleep(1)
     print "Starting servers"

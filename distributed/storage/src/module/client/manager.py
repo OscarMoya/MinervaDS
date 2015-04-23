@@ -110,7 +110,7 @@ class ClientManager:
         while not self.__ready[file_id]:
             continue
         print "Two chunks received at least"
-        print "File id:", file_id
+        print "File ID:", file_id
         chunks = self.__file_db.filter(file_id=file_id)
         file = self.__construct_file(chunks)
         message = "End - Time: %s " % (get_time_now())
@@ -154,27 +154,42 @@ class ClientManager:
         chunk_a = chunk_list.pop(0)
         chunk_a_value = chunk_a.get("value")
 
-        f = open(chunk_a_value, "rb")
-        chunk_a_data = xmlrpclib.Binary(f.read())
-        f.close()
-        thread1 = threading.Thread(target=channel_a.write, args=[chunk_a_data, servers.get("file_id"), chunk_a.get("type")])
-        thread1.start()
+        try:
+            f = open(chunk_a_value, "rb")
+            chunk_a_data = xmlrpclib.Binary(f.read())
+            f.close()
+            thread1 = threading.Thread(target=channel_a.write, args=[chunk_a_data, servers.get("file_id"), chunk_a.get("type")])        
+            thread1.start()
 
-        chunk_b = chunk_list.pop(0)
-        chunk_b_value = chunk_b.get("value")
-        f = open(chunk_b_value, "rb")
-        chunk_b_data = xmlrpclib.Binary(f.read())
-        f.close()
-        thread2 = threading.Thread(target=channel_b.write, args=[chunk_b_data, servers.get("file_id"), chunk_b.get("type")])
-        thread2.start()
+        except:
+            print "Server lost"
+            pass
 
-        chunk_c = chunk_list.pop(0)
-        chunk_c_value = chunk_c.get("value")
-        f = open(chunk_c_value, "rb")
-        chunk_c_data = xmlrpclib.Binary(f.read())
-        f.close()
-        thread3 = threading.Thread(target=channel_c.write, args=[chunk_c_data, servers.get("file_id"), chunk_c.get("type")])
-        thread3.start()
+        try:
+            chunk_b = chunk_list.pop(0)
+            chunk_b_value = chunk_b.get("value")
+            f = open(chunk_b_value, "rb")
+            chunk_b_data = xmlrpclib.Binary(f.read())
+            f.close()
+            thread2 = threading.Thread(target=channel_b.write, args=[chunk_b_data, servers.get("file_id"), chunk_b.get("type")])
+            thread2.start()
+
+        except:
+            print "Server lost"
+            pass
+
+        try:
+            chunk_c = chunk_list.pop(0)
+            chunk_c_value = chunk_c.get("value")
+            f = open(chunk_c_value, "rb")
+            chunk_c_data = xmlrpclib.Binary(f.read())
+            f.close()
+            thread3 = threading.Thread(target=channel_c.write, args=[chunk_c_data, servers.get("file_id"), chunk_c.get("type")])
+            thread3.start()
+
+        except:
+            print "Server lost"
+            pass
 
         del chunk_list
         del chunk_a_data

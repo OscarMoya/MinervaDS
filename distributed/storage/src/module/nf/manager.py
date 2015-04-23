@@ -84,16 +84,17 @@ class NFManager:
         a_hex = binascii.hexlify(a_flow_file)
         b_hex = binascii.hexlify(b_flow_file)
         axorb_hex = hex(int(a_hex, 16) ^ int(b_hex, 16))[2:]
-        
+
         del a_hex
         del b_hex
       
-        #if axorb_hex[-1] in '|L':          
         if True:   
             if (len(axorb_hex) % 2) != 0:
-                axorb_hex = axorb_hex[:-1]
+                if axorb_hex[-1] in '|L':
+                    axorb_hex = axorb_hex[:-1] 
             else:
-                axorb_hex = "0" + axorb_hex[:-1]
+                if axorb_hex[-1] in '|L':
+                    axorb_hex = "0" + axorb_hex[:-1]
         
         axorb_flow_file = binascii.unhexlify(axorb_hex)
         self.store_temp(axorb_flow_file, temp_c)
@@ -126,10 +127,13 @@ class NFManager:
             a_hex = binascii.hexlify(a_str) 
             c_hex = binascii.hexlify(c_str)
             b_hex = hex(int(a_hex, 16) ^ int(c_hex, 16))[2:]
+
             if b_hex[-1] in '|L':
                 b_hex = b_hex[:-1]
+
             del a_str
             del c_str
+        
         elif not a and b:
             b_str = str(b)
             c_str = str(c)
@@ -138,19 +142,23 @@ class NFManager:
             b_hex = binascii.hexlify(b_str)
             c_hex = binascii.hexlify(c_str)
             a_hex = hex(int(b_hex, 16) ^ int(c_hex, 16))[2:]
+
             if a_hex[-1] in '|L':
                 a_hex = a_hex[:-1]
+           
             del b_str
             del c_str
-        elif a and b:           
+
+        elif a and b:
             a_str = str(a)
             b_str = str(b)
             a_hex = binascii.hexlify(a_str)
             b_hex = binascii.hexlify(b_str)
             del a_str
             del b_str
-        result = a_hex + b_hex
-        
+       
+        result = a_hex + b_hex       
+ 
         if (len(result) % 2) != 0:
                 
                 print "Odd-lenght"
